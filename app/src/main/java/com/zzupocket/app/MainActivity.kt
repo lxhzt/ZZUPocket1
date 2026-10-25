@@ -35,6 +35,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
 
         consumeWidgetRoute(intent)
 
@@ -80,6 +81,7 @@ class MainActivity : ComponentActivity() {
         // 读完就把 extra 从 Intent 里删掉：这条 Intent 会被系统留着，
         // 重建时不该再取到它（否则每次重建都要跳一次）
         intent.removeExtra(AppRoutes.EXTRA_ROUTE)
+        if (!AppRoutes.isWidgetRoute(route)) return
         widgetRoute = route
         routeToken++
     }

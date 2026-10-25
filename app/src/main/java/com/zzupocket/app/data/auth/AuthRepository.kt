@@ -1,5 +1,8 @@
 package com.zzupocket.app.data.auth
 
+import com.zzupocket.app.core.security.SecurityPolicy
+import com.zzupocket.app.core.security.WebSessionCleaner
+
 import com.zzupocket.app.core.AppError
 import com.zzupocket.app.core.crypto.Crypto
 import com.zzupocket.app.data.ecard.EcardClient
@@ -82,6 +85,7 @@ class AuthRepository(
     // ── 登录编排（账密 → 可能再要短信码 → 换令牌）─────────────────────
 
     suspend fun beginLogin(account: String, password: String): LoginStep {
+        requireBoundAccount(account)
         val detect = cas.detectMfa(account, password)
         val challenge = detect.challenge
         if (challenge != null) {
@@ -104,6 +108,7 @@ class AuthRepository(
         challenge: CasClient.MfaChallenge,
         code: String,
     ): LoginStep.Success {
+        requireBoundAccount(account)
         cas.verifySmsCode(challenge, code)
         // 同样要带上 state —— 它来自 /mfa/detect，短信校验通过后一并交给 passwordLogin
         val result = cas.login(account, password, mfaState = challenge.state)
@@ -111,6 +116,8 @@ class AuthRepository(
     }
 
     private fun persist(result: CasClient.LoginResult, account: String): LoginStep.Success {
+        requireBoundAccount(account)
+        store.boundAccount = account
         store.casUserToken = result.userToken
         store.casRefreshToken = result.refreshToken
         store.lastLoginAt = System.currentTimeMillis()
@@ -121,7 +128,15 @@ class AuthRepository(
         return LoginStep.Success(account)
     }
 
+    private fun requireBoundAccount(account: String) {
+        val bound = store.boundAccount
+        if (bound != null && bound != account) {
+            throw AppError.SecurityRestriction("此安全版安装仅允许同一学校账号登录，账号切换暂未开放。")
+        }
+    }
+
     fun logout() {
+        WebSessionCleaner.clear()
         store.clearAll()
     }
 
@@ -132,6 +147,7 @@ class AuthRepository(
      * 一卡通官方周期是 45 分钟，这里按 40 分钟提前刷新。
      */
     suspend fun requireEcardAccessToken(): String {
+        SecurityPolicy.requireFinancialNetwork()
         val cached = store.ecardAccessToken
         val age = System.currentTimeMillis() - store.ecardTokenAt
         if (!cached.isNullOrEmpty() && age in 0 until EcardClient.TOKEN_TTL_MS) return cached

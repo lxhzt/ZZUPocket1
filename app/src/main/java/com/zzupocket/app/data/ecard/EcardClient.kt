@@ -1,5 +1,9 @@
 package com.zzupocket.app.data.ecard
 
+import com.zzupocket.app.core.net.readBoundedText
+
+import com.zzupocket.app.core.security.SecurityPolicy
+
 import android.util.Log
 import com.zzupocket.app.core.AppError
 import kotlinx.coroutines.Dispatchers
@@ -250,7 +254,7 @@ class EcardClient(
             .addQueryParameter("token", userToken)
             .build()
         val response = try {
-            client.newCall(Request.Builder().url(url).get().build()).execute()
+            financialClient().newCall(Request.Builder().url(url).get().build()).execute()
         } catch (e: IOException) {
             throw AppError.Network("无法连接一卡通服务", e)
         }
@@ -283,7 +287,7 @@ class EcardClient(
     suspend fun fetchTokens(tid: String): Tokens = withContext(Dispatchers.IO) {
         val payload = json.encodeToString(TidBody.serializer(), TidBody(tid))
         val response = try {
-            client.newCall(
+            financialClient().newCall(
                 Request.Builder()
                     .url(TOKEN_URL)
                     .post(payload.toRequestBody(JSON_MEDIA))
@@ -292,7 +296,7 @@ class EcardClient(
         } catch (e: IOException) {
             throw AppError.Network("无法连接一卡通服务", e)
         }
-        val (status, text) = response.use { it.code to it.body?.string().orEmpty() }
+        val (status, text) = response.use { it.code to it.body.readBoundedText() }
         if (status !in 200..299) {
             throw AppError.Server(status, "一卡通换取令牌失败（HTTP $status，路径 /server/auth/getToken）")
         }
@@ -330,7 +334,7 @@ class EcardClient(
             ),
         )
         val response = try {
-            client.newCall(
+            financialClient().newCall(
                 Request.Builder()
                     .url(ACCOUNT_URL)
                     .header("Authorization", accessToken)
@@ -342,7 +346,7 @@ class EcardClient(
         }
         val text = response.use {
             if (!it.isSuccessful) throw AppError.Server(it.code, "电量查询失败（HTTP ${it.code}）")
-            it.body?.string().orEmpty()
+            it.body.readBoundedText()
         }
         val env = try {
             json.decodeFromString<AccountEnvelope>(text)
@@ -376,7 +380,7 @@ class EcardClient(
     suspend fun fetchBoundLocation(accessToken: String): EcardLocation = withContext(Dispatchers.IO) {
         val payload = json.encodeToString(ConfigBody.serializer(), ConfigBody())
         val response = try {
-            client.newCall(
+            financialClient().newCall(
                 Request.Builder()
                     .url(CONFIG_URL)
                     .header("Authorization", accessToken)
@@ -388,7 +392,7 @@ class EcardClient(
         }
         val text = response.use {
             if (!it.isSuccessful) throw AppError.Server(it.code, "读取绑定房间失败（HTTP ${it.code}）")
-            it.body?.string().orEmpty()
+            it.body.readBoundedText()
         }
         val env = try {
             json.decodeFromString<ConfigEnvelope>(text)
@@ -440,7 +444,7 @@ class EcardClient(
             ),
         )
         val response = try {
-            client.newCall(
+            financialClient().newCall(
                 Request.Builder()
                     .url(LOCATION_URL)
                     .header("Authorization", accessToken)
@@ -452,7 +456,7 @@ class EcardClient(
         }
         val text = response.use {
             if (!it.isSuccessful) throw AppError.Server(it.code, "房间树查询失败（HTTP ${it.code}）")
-            it.body?.string().orEmpty()
+            it.body.readBoundedText()
         }
         val env = try {
             json.decodeFromString<LocationEnvelope>(text)
@@ -488,11 +492,11 @@ class EcardClient(
             builder.post(bodyJson.toRequestBody(JSON_MEDIA))
         }
         val response = try {
-            client.newCall(builder.build()).execute()
+            financialClient().newCall(builder.build()).execute()
         } catch (e: IOException) {
             throw AppError.Network("无法连接一卡通服务", e)
         }
-        response.use { it.code to it.body?.string().orEmpty() }
+        response.use { it.code to it.body.readBoundedText() }
     }
 
     // ── 校园卡消费 ──────────────────────────────────────────────────────
@@ -573,13 +577,13 @@ class EcardClient(
     /** 原始响应（自检用）：状态码 + 原文 */
     suspend fun rawCardBalance(userToken: String): Pair<Int, String> = withContext(Dispatchers.IO) {
         val response = try {
-            client.newCall(
+            financialClient().newCall(
                 Request.Builder().url(BALANCE_URL).header("X-Id-Token", userToken).get().build(),
             ).execute()
         } catch (e: IOException) {
             throw AppError.Network("无法连接校园卡服务", e)
         }
-        response.use { it.code to it.body?.string().orEmpty() }
+        response.use { it.code to it.body.readBoundedText() }
     }
 
     /** 从余额响应里挑出正确的金额，见上面注释里的坑 */
@@ -676,6 +680,11 @@ class EcardClient(
     }
 
     data class ParsedRoom(val area: String, val building: String, val level: String, val room: String)
+
+    private fun financialClient(): OkHttpClient {
+        SecurityPolicy.requireFinancialNetwork()
+        return client
+    }
 
     companion object {
         private const val TAG_BALANCE = "EcardBalance"

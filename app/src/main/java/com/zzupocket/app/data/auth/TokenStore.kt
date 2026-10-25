@@ -70,8 +70,14 @@ class TokenStore(context: Context) {
         get() = prefs.getLong(KEY_LAST_LOGIN, 0L)
         set(value) = prefs.edit().putLong(KEY_LAST_LOGIN, value).apply()
 
+    /** Until imported caches are fully namespaced, this installation stays bound to one account. */
+    var boundAccount: String?
+        get() = prefs.getString("bound_account", null)
+        set(value) = prefs.edit().putString("bound_account", value).apply()
+
     fun clearAll() {
-        prefs.edit().clear().apply()
+        val binding = boundAccount
+        prefs.edit().clear().putString("bound_account", binding).apply()
     }
 
     companion object {

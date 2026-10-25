@@ -51,7 +51,7 @@ class GmsCookieTest {
         assertEquals(0, jar.size())
         jar.seed("gmsstu.zzu.edu.cn", mapOf("JSESSIONID" to "x"))
         assertEquals(1, jar.size())
-        val url = okhttp3.HttpUrl.Builder().scheme("https").host("gmsstu.zzu.edu.cn").build()
+        val url = okhttp3.HttpUrl.Builder().scheme("https").host("gmsstu.zzu.edu.cn").addPathSegment("stu").build()
         assertEquals("x", jar.loadForRequest(url).firstOrNull()?.value)
         jar.clear()
         assertEquals(0, jar.size())
@@ -74,7 +74,7 @@ class GmsCookieTest {
     fun `响应只带新 cookie 时不会丢掉已注入的会话`() {
         val jar = GmsCookieJar()
         jar.seed("gmsstu.zzu.edu.cn", mapOf("cn_com_southsoft_gmis_stu" to "guid-value"))
-        val url = okhttp3.HttpUrl.Builder().scheme("https").host("gmsstu.zzu.edu.cn").build()
+        val url = okhttp3.HttpUrl.Builder().scheme("https").host("gmsstu.zzu.edu.cn").addPathSegment("stu").build()
         val route = okhttp3.Cookie.Builder()
             .domain("gmsstu.zzu.edu.cn")
             .path("/")

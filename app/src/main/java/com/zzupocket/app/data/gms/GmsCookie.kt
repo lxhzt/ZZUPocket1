@@ -37,9 +37,9 @@ object GmsCookie {
      * **纯函数，便于单测**；解析不出任何键值对就返回空 Map（调用方据此判断"没会话"）。
      */
     fun parse(header: String?): Map<String, String> {
-        if (header.isNullOrBlank()) return emptyMap()
+        if (header.isNullOrBlank() || header.length > 65536 || header.any { it == '\r' || it == '\n' }) return emptyMap()
         return header.split(';')
-            .mapNotNull { part ->
+            .take(64).mapNotNull { part ->
                 val t = part.trim()
                 if (t.isEmpty()) return@mapNotNull null
                 val eq = t.indexOf('=')
@@ -73,35 +73,58 @@ object GmsCookie {
  */
 class GmsCookieJar : CookieJar {
 
-    private val store = HashMap<String, MutableList<Cookie>>()
+    private val store = mutableListOf<Cookie>()
 
     /** 由 WebView 会话注入（humble：只保留 host/path/name/value 四项，够用） */
+    @Synchronized
     fun seed(host: String, cookies: Map<String, String>) {
-        if (cookies.isEmpty()) return
-        store[host] = cookies.map { (name, value) ->
-            Cookie.Builder()
-                .domain(host)
-                .path("/")
-                .name(name)
-                .value(value)
-                .build()
-        }.toMutableList()
+        require(host == "gmsstu.zzu.edu.cn") { "Unapproved cookie host" }
+        store.removeAll { it.domain == host }
+        cookies.entries.take(32).forEach { (name, value) ->
+            if (name.length > 128 || value.length > 4096) return@forEach
+            runCatching {
+                Cookie.Builder().hostOnlyDomain(host).path("/stu")
+                    .name(name).value(value).secure().httpOnly().build()
+            }.getOrNull()?.let { store.add(it) }
+        }
     }
 
     /** 已注入的 cookie 条数（0 = 还没有会话） */
-    fun size(): Int = store.values.sumOf { it.size }
-
-    /** 清空（退出登录时用） */
-    fun clear() = store.clear()
-
-    override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
-        if (cookies.isEmpty()) return
-        // 合并而不是整体替换：服务端有时只在响应里回一个新 cookie（例如 route），
-        // 整体替换会把 WebView 注入的会话 cookie 一并丢掉。
-        val merged = store[url.host].orEmpty().associateBy { it.name }.toMutableMap()
-        cookies.forEach { merged[it.name] = it }
-        store[url.host] = merged.values.toMutableList()
+    @Synchronized
+    fun size(): Int {
+        prune()
+        return store.size
     }
 
-    override fun loadForRequest(url: HttpUrl): List<Cookie> = store[url.host].orEmpty()
+    /** 清空（退出登录时用） */
+    @Synchronized
+    fun clear() = store.clear()
+
+    @Synchronized
+    override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
+        if (!url.isHttps || url.host != "gmsstu.zzu.edu.cn") return
+        prune()
+        cookies.take(32).filter { it.domain == url.host }.forEach { cookie ->
+            store.removeAll { it.name == cookie.name && it.domain == cookie.domain && it.path == cookie.path }
+            if (cookie.expiresAt > System.currentTimeMillis() && cookie.value.length <= 4096) {
+                // Even if the school omits Secure, never replay a session over HTTP.
+                store.add(Cookie.Builder().name(cookie.name).value(cookie.value).path(cookie.path)
+                    .apply {
+                        if (cookie.hostOnly) hostOnlyDomain(cookie.domain) else domain(cookie.domain)
+                        if (cookie.persistent) expiresAt(cookie.expiresAt)
+                        if (cookie.httpOnly) httpOnly()
+                    }.secure().build())
+            }
+        }
+        while (store.size > 64) store.removeAt(0)
+    }
+
+    @Synchronized
+    override fun loadForRequest(url: HttpUrl): List<Cookie> {
+        prune()
+        if (!url.isHttps || url.host != "gmsstu.zzu.edu.cn") return emptyList()
+        return store.filter { it.matches(url) }.sortedByDescending { it.path.length }
+    }
+
+    private fun prune() { store.removeAll { it.expiresAt <= System.currentTimeMillis() } }
 }

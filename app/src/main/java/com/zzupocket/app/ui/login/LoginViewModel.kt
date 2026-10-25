@@ -83,6 +83,7 @@ class LoginViewModel : ViewModel() {
     }
 
     fun submitCredentials() {
+        if (_state.value.busy) return
         val s = _state.value
         if (s.account.isEmpty() || s.password.isEmpty()) {
             _state.update { it.copy(error = "请填写学号和密码") }
@@ -129,6 +130,7 @@ class LoginViewModel : ViewModel() {
     }
 
     fun resendSms() {
+        if (_state.value.busy) return
         val c = challenge ?: return
         val left = _state.value.resendCooldownSec
         if (left > 0) {
@@ -163,6 +165,7 @@ class LoginViewModel : ViewModel() {
     }
 
     fun submitSms() {
+        if (_state.value.busy) return
         val c = challenge ?: return
         val code = _state.value.smsCode
         if (code.length < 4) {
@@ -189,7 +192,20 @@ class LoginViewModel : ViewModel() {
      * "认证成功、闪回主页、仍显示未登录、没有任何提示"。这里停下来把令牌形态
      * （只含段数/长度/字段名，不含值）显示出来，不再静默。
      */
+    private fun clearSecrets() {
+        pendingPassword = ""
+        pendingAccount = ""
+        challenge = null
+        _state.update { it.copy(password = "", smsCode = "") }
+    }
+
+    override fun onCleared() {
+        clearSecrets()
+        super.onCleared()
+    }
+
     private fun finishLogin() {
+        clearSecrets()
         if (auth.isLoggedIn()) {
             _state.update { it.copy(busy = false, phase = LoginPhase.Done) }
         } else {

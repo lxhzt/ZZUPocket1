@@ -25,5 +25,8 @@ object AppRoutes {
      * MainActivity 读到它之后会**把它从 Intent 里删掉**：不删的话，转屏、切深色模式
      * 这类 Activity 重建会再次执行跳转，用户正看着明细时会被莫名弹回去。
      */
+    fun isWidgetRoute(route: String): Boolean =
+        route in setOf(TODAY, SCHEDULE, FOCUS, CAMPUS, ELECTRICITY, CARD)
+
     const val EXTRA_ROUTE = "com.zzupocket.app.extra.ROUTE"
 }

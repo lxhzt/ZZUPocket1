@@ -1,4 +1,4 @@
-﻿import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
 // ── 签名 ───────────────────────────────────────────────────────────────
@@ -25,14 +25,15 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.zzupocket.app"
+        // Separate data sandbox from the upstream app; never migrate/delete its private records.
+        applicationId = "com.zzupocket.app.secure"
         minSdk = 31
         targetSdk = 36
         versionCode = 89
         // 版本号只写纯数字，不再带 -P6 那种阶段后缀（阶段划分是 docs 里的事，别混进版本号）。
         // ⚠️ 升级判断只认 versionCode（Android 的规则），versionName 是给人看的；
         // 所以改名号（哪怕是"变小"的数字）都不会影响覆盖安装，每次发版 versionCode 必须 +1。
-        versionName = "0.32.2"
+        versionName = "0.32.2-security"
     }
 
     signingConfigs {
@@ -48,7 +49,8 @@ android {
 
     buildTypes {
         debug {
-            if (hasReleaseSigning) signingConfig = signingConfigs.getByName("zzupocket")
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
         }
         release {
             isMinifyEnabled = true
@@ -60,8 +62,8 @@ android {
             if (hasReleaseSigning) {
                 signingConfig = signingConfigs.getByName("zzupocket")
             } else {
-                logger.lifecycle("⚠️ 未找到 keystore.properties，release 包将使用 debug 签名")
-                signingConfig = signingConfigs.getByName("debug")
+                // Unsigned release is suitable for review; production requires an owner-held key.
+                signingConfig = null
             }
         }
     }

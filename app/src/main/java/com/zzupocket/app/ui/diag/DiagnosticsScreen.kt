@@ -307,6 +307,7 @@ class DiagnosticsViewModel : ViewModel() {
 
     /** 只退出研究生教务会话，不动统一认证登录 */
     fun logoutGms() {
+        com.zzupocket.app.core.security.WebSessionCleaner.clear()
         AppGraph.gmsScheduleSource.clear()
         refreshGmsState()
     }

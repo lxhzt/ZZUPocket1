@@ -1,6 +1,7 @@
 package com.zzupocket.app.core.net
 
 import com.zzupocket.app.BuildConfig
+import com.zzupocket.app.core.security.SchoolNetworkInterceptor
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response
@@ -78,10 +79,12 @@ object HttpClients {
     }
 
     private fun builder(minIntervalMs: Long) = OkHttpClient.Builder()
+        .addInterceptor(SchoolNetworkInterceptor())
+        .callTimeout(45, TimeUnit.SECONDS)
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(25, TimeUnit.SECONDS)
         .writeTimeout(20, TimeUnit.SECONDS)
-        .retryOnConnectionFailure(true)
+        .retryOnConnectionFailure(false)
         .addInterceptor(HeaderInterceptor())
         .addInterceptor(RateLimitInterceptor(minIntervalMs))
         .apply { if (BuildConfig.DEBUG) addInterceptor(SafeLogInterceptor()) }

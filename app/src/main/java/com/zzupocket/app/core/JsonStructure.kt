@@ -46,7 +46,7 @@ object JsonStructure {
                 element.firstOrNull()?.let { flatten(it, "$path[]", out, depth + 1, maxDepth) }
             }
 
-            else -> out.add("$path = ${element.toString().take(48)}")
+            else -> out.add("$path （字段值已省略）")
         }
     }
 }

@@ -11,6 +11,8 @@ package com.zzupocket.app.core
  */
 sealed class AppError(message: String, cause: Throwable? = null) : Exception(message, cause) {
 
+    class SecurityRestriction(message: String) : AppError(message)
+
     /** 需要用户重新登录（令牌失效且无法自动刷新） */
     class ReLoginRequired(message: String = "登录已失效，请重新登录") : AppError(message)
 

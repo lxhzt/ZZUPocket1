@@ -1,5 +1,9 @@
 package com.zzupocket.app.data.eas
 
+import com.zzupocket.app.core.net.readBoundedText
+
+import com.zzupocket.app.core.security.SecurityPolicy
+
 import android.util.Log
 import com.zzupocket.app.core.net.HttpClients
 import com.zzupocket.app.data.auth.AuthRepository
@@ -33,6 +37,7 @@ class EasAuthProbe(private val auth: AuthRepository) {
 
     /** `semesterId` 用于课表接口（它就是用户报告里失败的那个接口）；为空则跳过。 */
     suspend fun run(semesterId: Int? = null): String = withContext(Dispatchers.IO) {
+        SecurityPolicy.requireDiagnostics()
         val sb = StringBuilder()
         sb.appendLine("=== 教务鉴权自检 v1 ===")
         sb.appendLine("目标网关：jwxt.zzu.edu.cn（eams-door / eams-micro-server）")
@@ -135,7 +140,7 @@ class EasAuthProbe(private val auth: AuthRepository) {
 
     private fun toResult(r: Response): Result {
         // 401/403 的体是空的，但**其他状态**的体可能是有用的（改版/报错 JSON），所以照记不误
-        val text = runCatching { r.body?.string().orEmpty() }.getOrDefault("")
+        val text = runCatching { r.body.readBoundedText() }.getOrDefault("")
         return Result(
             status = r.code,
             bodyLength = text.length,

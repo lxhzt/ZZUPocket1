@@ -29,7 +29,7 @@ class GmsScheduleSource(
     /** 启动时把上次存的会话灌回 CookieJar（没有就什么都不做） */
     fun restore() {
         val saved = GmsCookie.parse(store.gmsCookie)
-        if (saved.isEmpty()) return
+        if (GmsCookie.guidOf(saved) == null) return
         jar.seed(HOST, saved)
         gms.resetSession()
     }
@@ -41,7 +41,7 @@ class GmsScheduleSource(
      */
     fun onWebViewLogin(cookieHeader: String?): Boolean {
         val parsed = GmsCookie.parse(cookieHeader)
-        if (parsed.isEmpty()) return false
+        if (GmsCookie.guidOf(parsed) == null) return false
         jar.seed(HOST, parsed)
         store.gmsCookie = GmsCookie.join(parsed)
         store.gmsCookieAt = System.currentTimeMillis()

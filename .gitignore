@@ -16,3 +16,8 @@ app/schemas/
 *.aab
 *.jks
 *.keystore
+.security-tools/
+.upstream-source/
+upstream.zip
+.gradle-local/
+local.properties

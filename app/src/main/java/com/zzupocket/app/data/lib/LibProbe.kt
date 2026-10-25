@@ -1,5 +1,9 @@
 package com.zzupocket.app.data.lib
 
+import com.zzupocket.app.core.net.readBoundedText
+
+import com.zzupocket.app.core.security.SecurityPolicy
+
 import android.util.Log
 import java.io.IOException
 import java.time.LocalDate
@@ -36,6 +40,7 @@ object LibProbe {
         .build()
 
     suspend fun run(): String = withContext(Dispatchers.IO) {
+        SecurityPolicy.requireDiagnostics()
         val sb = StringBuilder()
         sb.appendLine("=== 图书馆接口自检（传输层）===")
         sb.appendLine("时间：${LocalDate.now()}")
@@ -65,7 +70,7 @@ object LibProbe {
             .build()
         try {
             client.newCall(request).execute().use { response ->
-                val text = response.body?.string().orEmpty()
+                val text = response.body.readBoundedText()
                 sb.appendLine("HTTP ${response.code}，content-type=${response.header("Content-Type") ?: "-"}，${text.length} 字符")
                 sb.appendLine("响应：${text.take(600)}")
             }

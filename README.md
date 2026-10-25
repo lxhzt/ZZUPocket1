@@ -1,5 +1,11 @@
 # ZZUPocket
 
+> **当前安全整改分支**：电费、校园卡及所有相关账户网络调用已停用，代码保留；
+> 图书馆明文连接与在线诊断已暂停。仅允许白名单 HTTPS 学校服务。
+> 安全版使用独立包名，与原版并存，每次安装仅绑定一个学校账号。
+> 原版应用的数据不会被迁移或删除。下文功能介绍保留上游说明，实际限制以
+> [安全检查与验证记录](docs/security-review.md) 为准。
+
 郑州大学校园助手（Android）
 
 [![License](https://img.shields.io/github/license/3beuml/ZZUPocket.svg?style=flat)](LICENSE)

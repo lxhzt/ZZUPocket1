@@ -1,5 +1,9 @@
 package com.zzupocket.app.data.auth
 
+import com.zzupocket.app.core.security.SchoolNetworkPolicy
+
+import com.zzupocket.app.core.net.readBoundedText
+
 import com.zzupocket.app.core.AppError
 import com.zzupocket.app.core.crypto.Crypto
 import kotlinx.coroutines.Dispatchers
@@ -234,8 +238,14 @@ class CasClient(
         return LoginResult(userToken = data.idToken, refreshToken = data.refreshToken)
     }
 
-    private fun attestUrl(challenge: MfaChallenge, path: String): String =
-        challenge.attestBaseUrl.trimEnd('/') + "/" + path.trimStart('/')
+    private fun attestUrl(challenge: MfaChallenge, path: String): String {
+        val base = challenge.attestBaseUrl.toHttpUrl()
+        if (!SchoolNetworkPolicy.permits(base, setOf("cas.s.zzu.edu.cn")) ||
+            base.query != null || base.fragment != null) {
+            throw AppError.SecurityRestriction("认证服务返回了未获准的验证地址")
+        }
+        return base.toString().trimEnd('/') + "/" + path.trimStart('/')
+    }
 
     private suspend fun execute(request: Request): String = withContext(Dispatchers.IO) {
         val response = try {
@@ -244,7 +254,7 @@ class CasClient(
             throw AppError.Network("无法连接认证服务器，请检查网络", e)
         }
         response.use {
-            val text = it.body?.string().orEmpty()
+            val text = it.body.readBoundedText()
             if (it.isSuccessful) return@use text
 
             // 服务端的 message 字段通常直接说明原因（例如 exception.mfa.verify.error），
