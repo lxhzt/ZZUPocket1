@@ -248,6 +248,7 @@ class EcardClient(
      * ⚠️ 必须不跟随重定向 —— tid 在 302 的 Location 头里。
      */
     suspend fun fetchTid(userToken: String): String = withContext(Dispatchers.IO) {
+        SecurityPolicy.requireFinancialNetwork()
         val url = TID_URL.toHttpUrl().newBuilder()
             .addQueryParameter("host", "11")
             .addQueryParameter("org", "2")
@@ -285,6 +286,7 @@ class EcardClient(
     }
 
     suspend fun fetchTokens(tid: String): Tokens = withContext(Dispatchers.IO) {
+        SecurityPolicy.requireFinancialNetwork()
         val payload = json.encodeToString(TidBody.serializer(), TidBody(tid))
         val response = try {
             financialClient().newCall(
@@ -323,6 +325,7 @@ class EcardClient(
 
     /** 查询某个房间的剩余电量（度）。照明房间与空调房间都用这个方法，只是 room 不同。 */
     suspend fun queryRemainingKwh(accessToken: String, roomId: String): Double = withContext(Dispatchers.IO) {
+        SecurityPolicy.requireFinancialNetwork()
         val parsed = parseRoomId(roomId)
         val payload = json.encodeToString(
             EnergyQueryBody.serializer(),
@@ -378,6 +381,7 @@ class EcardClient(
      * 两套表计的宿舍另一路还得另外设。
      */
     suspend fun fetchBoundLocation(accessToken: String): EcardLocation = withContext(Dispatchers.IO) {
+        SecurityPolicy.requireFinancialNetwork()
         val payload = json.encodeToString(ConfigBody.serializer(), ConfigBody())
         val response = try {
             financialClient().newCall(
@@ -430,6 +434,7 @@ class EcardClient(
         locationType: String,
         scope: LocationScope = LocationScope(),
     ): LocationLevel = withContext(Dispatchers.IO) {
+        SecurityPolicy.requireFinancialNetwork()
         val payload = json.encodeToString(
             LocationQueryBody.serializer(),
             LocationQueryBody(
@@ -484,6 +489,7 @@ class EcardClient(
         accessToken: String?,
         bodyJson: String? = null,
     ): Pair<Int, String> = withContext(Dispatchers.IO) {
+        SecurityPolicy.requireFinancialNetwork()
         val builder = Request.Builder().url("$BASE/server$path")
         if (!accessToken.isNullOrEmpty()) builder.header("Authorization", accessToken)
         if (bodyJson == null) {
@@ -508,6 +514,7 @@ class EcardClient(
 
     /** 交易类型字典：消费 / 充值 / 补助，以及「全部」 */
     suspend fun fetchTradeTypes(accessToken: String): List<TradeTypeDto> {
+        SecurityPolicy.requireFinancialNetwork()
         val (status, text) = rawCall("/user/tradeListType", accessToken, "{}")
         if (status !in 200..299) {
             throw AppError.Server(status, "查询交易类型失败（HTTP $status）")
@@ -532,6 +539,7 @@ class EcardClient(
         pageNo: Int = 0,
         pageSize: Int = 50,
     ): List<TradeRecordDto> {
+        SecurityPolicy.requireFinancialNetwork()
         val body = json.encodeToString(
             TradeListBody.serializer(),
             TradeListBody(
@@ -567,6 +575,7 @@ class EcardClient(
      * 并把所有候选写进日志（只记下标和金额，不记任何令牌）方便核对。
      */
     suspend fun fetchCardBalance(userToken: String): Double {
+        SecurityPolicy.requireFinancialNetwork()
         val (status, text) = rawCardBalance(userToken)
         if (status !in 200..299) {
             throw AppError.Server(status, "查询校园卡余额失败（HTTP $status）")
@@ -576,6 +585,7 @@ class EcardClient(
 
     /** 原始响应（自检用）：状态码 + 原文 */
     suspend fun rawCardBalance(userToken: String): Pair<Int, String> = withContext(Dispatchers.IO) {
+        SecurityPolicy.requireFinancialNetwork()
         val response = try {
             financialClient().newCall(
                 Request.Builder().url(BALANCE_URL).header("X-Id-Token", userToken).get().build(),
