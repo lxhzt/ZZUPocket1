@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-25",
+  "configuration": "lintDebug",
+  "errors": 0,
+  "warnings": 127,
+  "information": 6,
+  "rules": {
+    "RedundantLabel": 1,
+    "SpUsage": 84,
+    "HardwareIds": 1,
+    "ObsoleteSdkInt": 1,
+    "AutoboxingStateCreation": 6,
+    "NestedWeights": 13,
+    "Overdraw": 1,
+    "UnusedResources": 3,
+    "UselessLeaf": 8,
+    "TypographyDashes": 5,
+    "IconLocation": 3,
+    "ConstantLocale": 5,
+    "HardcodedText": 2
+  },
+  "security_review": {
+    "HardwareIds": "Existing SSAID used for CAS device identity; no new telemetry.",
+    "MissingPermission": "Fixed with explicit permission checks and SecurityException handling.",
+    "ProduceStateDoesNotAssignValue": "Rewritten as explicit remember/LaunchedEffect state; no lint suppression."
+  }
+}

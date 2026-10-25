@@ -92,8 +92,9 @@ fun BackgroundCropScreen(
     // （华为 Mate 70 Pro 反馈就是"系统说文件在本地，App 说读不出来"）。
     // 现在把**失败发生在哪一步 + 异常类型**写进提示里，用户截图就能定位。
     var loadError by remember(sourceUri, useSavedSource) { mutableStateOf<String?>(null) }
-    val source by produceState<Bitmap?>(initialValue = null, sourceUri, useSavedSource) {
-        value = withContext(Dispatchers.IO) {
+    var source by remember(sourceUri, useSavedSource) { mutableStateOf<Bitmap?>(null) }
+    androidx.compose.runtime.LaunchedEffect(sourceUri, useSavedSource) {
+        source = withContext(Dispatchers.IO) {
             if (useSavedSource) {
                 decodeBitmapFile(ScheduleBackground.sourceFile(context), MAX_DECODE_WIDTH)
             } else if (sourceUri == null) {

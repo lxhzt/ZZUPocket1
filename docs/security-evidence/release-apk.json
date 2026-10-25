@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-25",
+  "package": "com.zzupocket.app.secure",
+  "release_debuggable": false,
+  "backup_enabled": false,
+  "cleartext_enabled": false,
+  "exported_components": [
+    {
+      "type": "activity",
+      "name": "com.zzupocket.app.MainActivity",
+      "permission": null
+    },
+    {
+      "type": "service",
+      "name": "androidx.work.impl.background.systemjob.SystemJobService",
+      "permission": "android.permission.BIND_JOB_SERVICE"
+    },
+    {
+      "type": "receiver",
+      "name": "androidx.work.impl.diagnostics.DiagnosticsReceiver",
+      "permission": "android.permission.DUMP"
+    },
+    {
+      "type": "receiver",
+      "name": "androidx.profileinstaller.ProfileInstallReceiver",
+      "permission": "android.permission.DUMP"
+    }
+  ],
+  "manifest_permissions": [
+    "package: com.zzupocket.app.secure",
+    "uses-permission: name='android.permission.INTERNET'",
+    "uses-permission: name='android.permission.ACCESS_NETWORK_STATE'",
+    "uses-permission: name='android.permission.POST_NOTIFICATIONS'",
+    "uses-permission: name='android.permission.FOREGROUND_SERVICE'",
+    "uses-permission: name='android.permission.FOREGROUND_SERVICE_SPECIAL_USE'",
+    "uses-permission: name='android.permission.VIBRATE'",
+    "uses-permission: name='android.permission.WAKE_LOCK'",
+    "uses-permission: name='android.permission.RECEIVE_BOOT_COMPLETED'",
+    "permission: com.zzupocket.app.secure.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+    "uses-permission: name='com.zzupocket.app.secure.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'"
+  ],
+  "apk_sha256": "2eb7d0d58a15d12e109fa588a884be7c66627c8323cadf07c6cec7fbb295fa7e",
+  "apk_bytes": 6145524,
+  "signing": "unsigned; owner-held production key required",
+  "runtime_device_tested": false,
+  "android_log_method_references": [
+    "getStackTraceString",
+    "isLoggable",
+    "println",
+    "wtf"
+  ],
+  "direct_verbose_debug_info_warn_error_log_references": false,
+  "compiled_network_config": [
+    "E: network-security-config (line=2)",
+    "  E: base-config (line=3)",
+    "    A: cleartextTrafficPermitted=(type 0x12)0x0",
+    "    E: trust-anchors (line=4)",
+    "      E: certificates (line=4)",
+    "        A: src=\"system\" (Raw: \"system\")"
+  ]
+}

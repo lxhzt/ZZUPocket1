@@ -88,22 +88,28 @@ object ScheduleBackground {
 
 /** 组合式读取：解码放到 IO 线程，别卡住首帧 */
 @Composable
-fun rememberScheduleBackground(context: Context, path: String?, version: Int): ImageBitmap? =
-    produceState<ImageBitmap?>(initialValue = null, path, version) {
-        value = if (path == null) {
+fun rememberScheduleBackground(context: Context, path: String?, version: Int): ImageBitmap? {
+    val image = androidx.compose.runtime.remember(path, version) {
+        androidx.compose.runtime.mutableStateOf<ImageBitmap?>(null)
+    }
+    androidx.compose.runtime.LaunchedEffect(path, version) {
+        image.value = if (path == null) {
             null
         } else {
             withContext(Dispatchers.IO) { ScheduleBackground.load(context, version) }
         }
-    }.value
+    }
+    return image.value
+}
 
 /** 按需采样解码一个文件（裁剪页读回原图用） */
 internal fun decodeBitmapFile(file: File, maxWidth: Int): Bitmap? {
-    if (!file.exists()) return null
+    if (!file.exists() || file.length() > 32L * 1024 * 1024) return null
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     BitmapFactory.decodeFile(file.absolutePath, bounds)
+    if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
     var sample = 1
-    while (bounds.outWidth / sample > maxWidth * 2) sample *= 2
+    while (maxOf(bounds.outWidth, bounds.outHeight).toLong() > maxWidth.toLong() * sample) sample *= 2
     val options = BitmapFactory.Options().apply {
         inSampleSize = sample
         inPreferredConfig = Bitmap.Config.ARGB_8888

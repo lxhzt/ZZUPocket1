@@ -5,6 +5,7 @@ import com.zzupocket.app.core.net.readBoundedText
 import com.zzupocket.app.core.security.SchoolNetworkInterceptor
 import com.zzupocket.app.core.security.SchoolNetworkPolicy
 import com.zzupocket.app.data.ecard.EcardClient
+import com.zzupocket.app.data.auth.CasClient
 import com.zzupocket.app.data.gms.GmsClient
 import com.zzupocket.app.data.gms.GmsCookieJar
 import java.io.IOException
@@ -69,6 +70,24 @@ class SecurityBoundaryTest {
         ).forEach { assertFalse(it, SchoolNetworkPolicy.permits(it.toHttpUrl())) }
         assertTrue(SchoolNetworkPolicy.permits("https://jwxt.zzu.edu.cn/".toHttpUrl()))
         assertFalse(SchoolNetworkPolicy.permits("https://jwxt.zzu.edu.cn/".toHttpUrl(), SchoolNetworkPolicy.webHosts))
+    }
+
+    @Test fun `MFA state and SMS codes cannot be sent to untrusted destinations`() = runBlocking {
+        val attempts = AtomicInteger()
+        val transport = OkHttpClient.Builder().dns(noDns).addInterceptor {
+            attempts.incrementAndGet()
+            throw AssertionError("Untrusted MFA request reached transport")
+        }.build()
+        val api = CasClient(transport, Json, "synthetic-device")
+        listOf("https://evil.invalid/", "http://cas.s.zzu.edu.cn/", "https://cas.s.zzu.edu.cn:8443/",
+            "https://user:pass@cas.s.zzu.edu.cn/", "https://cas.s.zzu.edu.cn/?redirect=evil").forEach { url ->
+            val challenge = CasClient.MfaChallenge("synthetic-state", "synthetic-gid", url)
+            try { api.sendSmsCode(challenge); fail("Untrusted MFA destination accepted") }
+            catch (expected: AppError.SecurityRestriction) { /* no network */ }
+            try { api.verifySmsCode(challenge, "000000"); fail("SMS code left the trust boundary") }
+            catch (expected: AppError.SecurityRestriction) { /* no network */ }
+        }
+        assertEquals(0, attempts.get())
     }
 
     @Test fun `blocked requests never reach transport or DNS under concurrent load`() {
