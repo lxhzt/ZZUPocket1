@@ -36,6 +36,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+        window.setHideOverlayWindows(true)
 
         consumeWidgetRoute(intent)
 
@@ -74,6 +75,13 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         consumeWidgetRoute(intent)
+    }
+
+    override fun dispatchTouchEvent(event: android.view.MotionEvent): Boolean {
+        val obscured = android.view.MotionEvent.FLAG_WINDOW_IS_OBSCURED or
+            android.view.MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED
+        if (event.flags and obscured != 0) return false
+        return super.dispatchTouchEvent(event)
     }
 
     private fun consumeWidgetRoute(intent: Intent?) {

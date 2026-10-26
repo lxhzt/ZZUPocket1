@@ -14,7 +14,17 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 object SecureWebView {
     fun permits(url: String): Boolean = url.toHttpUrlOrNull()?.let {
-        SchoolNetworkPolicy.permits(it, SchoolNetworkPolicy.webHosts)
+        if (!SchoolNetworkPolicy.permits(it, SchoolNetworkPolicy.webHosts)) return@let false
+        // This browser exists only to establish the GMS session, never another CAS service.
+        if (it.host == "cas.s.zzu.edu.cn" && "service" in it.queryParameterNames) {
+            val services = it.queryParameterValues("service")
+            if (services.size != 1) return@let false
+            val service = services.single()?.toHttpUrlOrNull() ?: return@let false
+            if (!SchoolNetworkPolicy.permits(service, setOf("gmsstu.zzu.edu.cn")) ||
+                service.encodedPath !in setOf("/stu", "/stu/", "/stu/cas") ||
+                service.query != null || service.fragment != null) return@let false
+        }
+        true
     } == true
 
     fun configure(view: WebView) {

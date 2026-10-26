@@ -26,7 +26,11 @@ class TokenStore(context: Context) {
             masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-        )
+        ).also { encrypted ->
+            // Retire only unused authentication material; never delete business/history data.
+            encrypted.edit().remove(KEY_CAS_REFRESH).remove(KEY_ECARD_ACCESS)
+                .remove(KEY_ECARD_REFRESH).remove(KEY_ECARD_AT).apply()
+        }
     }
 
     var casUserToken: String?

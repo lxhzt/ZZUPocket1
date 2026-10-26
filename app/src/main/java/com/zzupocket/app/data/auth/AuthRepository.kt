@@ -119,7 +119,8 @@ class AuthRepository(
         requireBoundAccount(account)
         store.boundAccount = account
         store.casUserToken = result.userToken
-        store.casRefreshToken = result.refreshToken
+        // No refresh flow consumes this credential. Do not retain an unused long-lived secret.
+        store.casRefreshToken = null
         store.lastLoginAt = System.currentTimeMillis()
         // CAS 令牌换了，一卡通的二级令牌一起作废
         store.ecardAccessToken = null

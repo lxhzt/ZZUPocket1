@@ -3,8 +3,7 @@ import java.util.Properties
 
 // ── 签名 ───────────────────────────────────────────────────────────────
 // 凭据在仓库根的 keystore.properties（已 gitignore），keystore 文件本身在仓库之外。
-// 刻意让 debug 与 release 用**同一套签名**：不同签名不能互相覆盖安装，
-// 切换时必须卸载 → 本地数据全丢。
+// debug 使用独立包名和调试签名；release 只接受所有者配置的正式签名。
 val keystorePropsFile = rootProject.file("keystore.properties")
 val keystoreProps = Properties().apply {
     if (keystorePropsFile.exists()) keystorePropsFile.inputStream().use { load(it) }

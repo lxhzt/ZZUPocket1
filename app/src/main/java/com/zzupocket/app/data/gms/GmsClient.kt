@@ -1,6 +1,7 @@
 package com.zzupocket.app.data.gms
 
 import com.zzupocket.app.core.security.SchoolNetworkInterceptor
+import com.zzupocket.app.core.security.SchoolService
 
 import com.zzupocket.app.core.net.readBoundedText
 
@@ -352,11 +353,11 @@ class GmsClient(
                 .replace('=', '_')
         }
 
-        /** 独立 OkHttp client：跟重定向（CAS 登录链靠 302）+ 会话 CookieJar + 与 HttpClients 同一套超时 */
+        /** 原生查询只访问研究生课表；CAS 登录跳转交给受限 WebView，原生客户端不跟跳。 */
         fun newClient(jar: CookieJar = GmsCookieJar()): OkHttpClient = OkHttpClient.Builder()
             .followRedirects(false)
             .followSslRedirects(false)
-            .addInterceptor(SchoolNetworkInterceptor())
+            .addInterceptor(SchoolNetworkInterceptor(SchoolService.GMS))
             .callTimeout(45, TimeUnit.SECONDS)
             .cookieJar(jar)
             .connectTimeout(15, TimeUnit.SECONDS)

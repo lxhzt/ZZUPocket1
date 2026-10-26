@@ -2,6 +2,7 @@ package com.zzupocket.app.core.net
 
 import com.zzupocket.app.BuildConfig
 import com.zzupocket.app.core.security.SchoolNetworkInterceptor
+import com.zzupocket.app.core.security.SchoolService
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response
@@ -78,8 +79,10 @@ object HttpClients {
         }
     }
 
-    private fun builder(minIntervalMs: Long) = OkHttpClient.Builder()
-        .addInterceptor(SchoolNetworkInterceptor())
+    private fun builder(service: SchoolService, minIntervalMs: Long) = OkHttpClient.Builder()
+        .addInterceptor(SchoolNetworkInterceptor(service))
+        .followRedirects(false)
+        .followSslRedirects(false)
         .callTimeout(45, TimeUnit.SECONDS)
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(25, TimeUnit.SECONDS)
@@ -91,16 +94,16 @@ object HttpClients {
 
     /** CAS 统一认证：不需要 cookie 持久化，不需要跟随重定向 */
     val cas: OkHttpClient by lazy {
-        builder(minIntervalMs = 300).followRedirects(false).build()
+        builder(SchoolService.CAS, minIntervalMs = 300).build()
     }
 
     /** 一卡通：日常查询（跟随重定向无所谓，但统一关掉更可控） */
     val ecard: OkHttpClient by lazy {
-        builder(minIntervalMs = 300).followRedirects(false).build()
+        builder(SchoolService.FINANCE_DISABLED, minIntervalMs = 300).build()
     }
 
     /** 教务 EAS：同样是纯 JSON API，只需要 Authorization 头 */
     val eas: OkHttpClient by lazy {
-        builder(minIntervalMs = 300).followRedirects(false).build()
+        builder(SchoolService.EAS, minIntervalMs = 300).build()
     }
 }

@@ -167,6 +167,7 @@ class EasClient(
         usePost: Boolean = false,
         headerName: String = "Authorization",
     ): Pair<Int, String> = withContext(Dispatchers.IO) {
+        com.zzupocket.app.core.security.SecurityPolicy.requireDiagnostics()
         val url = if (pathOrUrl.startsWith("http")) pathOrUrl else "$JWXT$pathOrUrl"
         val builder = Request.Builder().url(url).header(headerName, userToken)
         if (usePost) {

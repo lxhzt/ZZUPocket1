@@ -7,6 +7,10 @@ import com.zzupocket.app.core.LoginInput
 import com.zzupocket.app.core.toUserMessage
 import com.zzupocket.app.data.auth.AuthRepository
 import com.zzupocket.app.data.auth.CasClient
+import com.zzupocket.app.core.security.PendingLoginCredentials
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,9 +48,9 @@ class LoginViewModel : ViewModel() {
     val state: StateFlow<LoginUiState> = _state.asStateFlow()
 
     /** 短信步骤需要复用账密，只存在内存里，不落盘 */
-    private var challenge: CasClient.MfaChallenge? = null
-    private var pendingAccount: String = ""
-    private var pendingPassword: String = ""
+    private val pending = PendingLoginCredentials<CasClient.MfaChallenge> { android.os.SystemClock.elapsedRealtime() }
+    private var pendingExpiryJob: Job? = null
+    private var loginJob: Job? = null
     private var cooldownJob: Job? = null
 
     /** 发码时刻存在本地，这样退出登录页再进来倒计时是"接着算"而不是重新开始 */
@@ -101,19 +105,24 @@ class LoginViewModel : ViewModel() {
             return
         }
 
-        pendingAccount = s.account
-        pendingPassword = s.password
+        pending.start(s.account, s.password)
+        pendingExpiryJob?.cancel()
+        pendingExpiryJob = viewModelScope.launch {
+            delay(PendingLoginCredentials.LIFETIME_MS)
+            expirePendingLogin()
+        }
         _state.update { it.copy(busy = true, error = null, notice = null) }
-        viewModelScope.launch {
+        loginJob = viewModelScope.launch {
             try {
-                when (val step = auth.beginLogin(pendingAccount, pendingPassword)) {
+                when (val step = auth.beginLogin(s.account, s.password)) {
                     is AuthRepository.LoginStep.NeedSms -> {
-                        challenge = step.challenge
+                        if (!pending.attachChallenge(step.challenge)) { expirePendingLogin(); return@launch }
                         markSmsSent()
                         _state.update {
                             it.copy(
                                 busy = false,
                                 phase = LoginPhase.NeedSms,
+                                password = "",
                                 notice = "验证码已发送，可能要 1 分钟才到达；" +
                                     "${RESEND_COOLDOWN_SEC} 秒内不能重新发送",
                             )
@@ -123,7 +132,10 @@ class LoginViewModel : ViewModel() {
                         finishLogin()
                     }
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Throwable) {
+                clearSecrets()
                 _state.update { it.copy(busy = false, error = e.msg()) }
             }
         }
@@ -131,14 +143,14 @@ class LoginViewModel : ViewModel() {
 
     fun resendSms() {
         if (_state.value.busy) return
-        val c = challenge ?: return
+        val c = pending.get()?.challenge ?: run { expirePendingLogin(); return }
         val left = _state.value.resendCooldownSec
         if (left > 0) {
             _state.update { it.copy(error = "刚发过一次，请再等 $left 秒") }
             return
         }
         _state.update { it.copy(busy = true, error = null) }
-        viewModelScope.launch {
+        loginJob = viewModelScope.launch {
             try {
                 auth.resendSmsCode(c)
                 markSmsSent()
@@ -149,6 +161,8 @@ class LoginViewModel : ViewModel() {
                             "${RESEND_COOLDOWN_SEC} 秒内不能重新发送",
                     )
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Throwable) {
                 // 服务端拒绝（多半是频率限制）时**也要进冷却**：否则用户会继续连点。
                 // 而且要在提示里把"还得等多久"说清楚，不能只说一句"失败了"——
@@ -166,17 +180,20 @@ class LoginViewModel : ViewModel() {
 
     fun submitSms() {
         if (_state.value.busy) return
-        val c = challenge ?: return
+        val credentials = pending.get() ?: run { expirePendingLogin(); return }
+        val c = credentials.challenge ?: return
         val code = _state.value.smsCode
         if (code.length < 4) {
             _state.update { it.copy(error = "请输入短信验证码") }
             return
         }
         _state.update { it.copy(busy = true, error = null) }
-        viewModelScope.launch {
+        loginJob = viewModelScope.launch {
             try {
-                auth.submitSmsCode(pendingAccount, pendingPassword, c, code)
+                auth.submitSmsCode(credentials.account, credentials.password, c, code)
                 finishLogin()
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Throwable) {
                 // 验证码错了就把输入清掉，避免用户对着旧码反复点提交
                 _state.update { it.copy(busy = false, error = e.msg(), smsCode = "") }
@@ -193,14 +210,26 @@ class LoginViewModel : ViewModel() {
      * （只含段数/长度/字段名，不含值）显示出来，不再静默。
      */
     private fun clearSecrets() {
-        pendingPassword = ""
-        pendingAccount = ""
-        challenge = null
+        pending.clear()
+        pendingExpiryJob?.cancel()
+        pendingExpiryJob = null
         _state.update { it.copy(password = "", smsCode = "") }
     }
 
-    override fun onCleared() {
+    fun abandonLogin() {
+        loginJob?.cancel()
+        loginJob = null
         clearSecrets()
+        _state.update { it.copy(busy = false, phase = LoginPhase.Credentials) }
+    }
+
+    private fun expirePendingLogin() {
+        abandonLogin()
+        _state.update { it.copy(error = "登录验证已超时，请重新输入密码", notice = null) }
+    }
+
+    override fun onCleared() {
+        abandonLogin()
         super.onCleared()
     }
 
@@ -227,6 +256,7 @@ class LoginViewModel : ViewModel() {
      */
     private suspend fun markSmsSent() {
         runCatching { loginPrefs.setSmsSentAt(System.currentTimeMillis()) }
+        currentCoroutineContext().ensureActive()
         startResendCooldown(RESEND_COOLDOWN_SEC)
     }
 

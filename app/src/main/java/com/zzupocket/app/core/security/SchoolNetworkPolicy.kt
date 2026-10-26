@@ -22,9 +22,11 @@ object SchoolNetworkPolicy {
 }
 
 /** Application interceptor: reject before DNS or any network I/O. */
-class SchoolNetworkInterceptor : Interceptor {
+class SchoolNetworkInterceptor(private val service: SchoolService) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         SchoolNetworkPolicy.requireAllowed(chain.request().url)
+        val permitted = SchoolRequestPolicy.permits(chain.request(), service)
+        if (!permitted) throw IOException("请求超出此功能获准的学校接口范围")
         return chain.proceed(chain.request())
     }
 }

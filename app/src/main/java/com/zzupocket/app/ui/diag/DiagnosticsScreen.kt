@@ -408,7 +408,7 @@ fun DiagnosticsScreen(
                         style = MaterialTheme.typography.bodySmall,
                     )
                     Text(
-                        "登录后在统一认证「安全中心」把这个设备设为可信设备，以后就不再需要短信验证码。",
+                        "设备信任与短信验证由学校统一认证管理，请按学校要求完成验证。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

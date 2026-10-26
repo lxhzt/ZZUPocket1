@@ -233,12 +233,13 @@ class ScheduleViewModel : ViewModel() {
      * 密码全程输在**学校自己的页面**上，我们只取它落下的会话 Cookie（不接触、不保存密码）。
      */
     fun adoptGmsSession() {
+        // Capture before closing the dialog: disposal clears the browser's CAS/GMS cookies.
+        val cookie = runCatching {
+            android.webkit.CookieManager.getInstance()
+                .getCookie(com.zzupocket.app.data.gms.GmsScheduleSource.COOKIE_URL)
+        }.getOrNull()
         _state.update { it.copy(gmsDialogOpen = false, gmsBusy = true, gmsError = null) }
         viewModelScope.launch {
-            val cookie = runCatching {
-                android.webkit.CookieManager.getInstance()
-                    .getCookie(com.zzupocket.app.data.gms.GmsScheduleSource.COOKIE_URL)
-            }.getOrNull()
             val adopted = com.zzupocket.app.core.AppGraph.gmsScheduleSource.onWebViewLogin(cookie)
             if (!adopted) {
                 _state.update {

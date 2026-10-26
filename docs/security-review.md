@@ -1,5 +1,7 @@
 # ZZUPocket 安全检查与整改记录
 
+> 后续记录（2026-10-26）：[公开前端分析](security-public-frontend-analysis.md)与[应用凭据隔离整改](security-credential-containment.md)。本文下方的测试数量和 APK 哈希属于 2026-10-25 的历史验证，不能作为后续改动产物的验收证据。
+
 日期：2026-10-25。目标仓库：`lxhzt/ZZUPocket1`，基线提交：`e2fb61fd333f66174445350e82cb54d19e3b7c08`。
 
 ## 范围与结论边界

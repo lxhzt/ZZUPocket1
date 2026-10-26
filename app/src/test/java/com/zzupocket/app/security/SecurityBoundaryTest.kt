@@ -4,6 +4,7 @@ import com.zzupocket.app.core.AppError
 import com.zzupocket.app.core.net.readBoundedText
 import com.zzupocket.app.core.security.SchoolNetworkInterceptor
 import com.zzupocket.app.core.security.SchoolNetworkPolicy
+import com.zzupocket.app.core.security.SchoolService
 import com.zzupocket.app.data.ecard.EcardClient
 import com.zzupocket.app.data.auth.CasClient
 import com.zzupocket.app.data.gms.GmsClient
@@ -93,7 +94,7 @@ class SecurityBoundaryTest {
     @Test fun `blocked requests never reach transport or DNS under concurrent load`() {
         val attempts = AtomicInteger()
         val client = OkHttpClient.Builder().dns(noDns)
-            .addInterceptor(SchoolNetworkInterceptor()).addInterceptor {
+            .addInterceptor(SchoolNetworkInterceptor(SchoolService.EAS)).addInterceptor {
                 attempts.incrementAndGet()
                 Response.Builder().request(it.request()).protocol(Protocol.HTTP_1_1)
                     .code(200).message("synthetic").body("{}".toResponseBody()).build()

@@ -37,7 +37,7 @@ check('only launcher activity exported', all(
     for n in app if n.get(ANDROID + 'exported') == 'true'))
 permissions = {n.get(ANDROID + 'name') for n in manifest.findall('uses-permission')}
 check('no added sensitive device permissions', permissions <= {
-    'android.permission.INTERNET', 'android.permission.ACCESS_NETWORK_STATE',
+    'android.permission.INTERNET', 'android.permission.ACCESS_NETWORK_STATE', 'android.permission.HIDE_OVERLAY_WINDOWS',
     'android.permission.POST_NOTIFICATIONS', 'android.permission.FOREGROUND_SERVICE',
     'android.permission.FOREGROUND_SERVICE_SPECIAL_USE', 'android.permission.VIBRATE'})
 ecard = (SRC / 'data/ecard/EcardClient.kt').read_text(encoding='utf-8')
@@ -45,12 +45,26 @@ check('all ecard request sites guarded', 'client.newCall(' not in ecard and
       ecard.count('financialClient().newCall(') == 7 and 'SecurityPolicy.requireFinancialNetwork()' in ecard)
 gms = (SRC / 'data/gms/GmsClient.kt').read_text(encoding='utf-8')
 check('native GMS redirects disabled and policy installed', '.followRedirects(false)' in gms and
-      '.followSslRedirects(false)' in gms and '.addInterceptor(SchoolNetworkInterceptor())' in gms)
+      '.followSslRedirects(false)' in gms and '.addInterceptor(SchoolNetworkInterceptor(SchoolService.GMS))' in gms)
 check('release has no debug signing fallback', 'signingConfig = signingConfigs.getByName("debug")' not in text('app/build.gradle.kts'))
 check('fork has separate application data', 'applicationId = "com.zzupocket.app.secure"' in text('app/build.gradle.kts'))
 check('Gradle distribution integrity pinned', bool(re.search(r'^distributionSha256Sum=[a-f0-9]{64}$',
       text('gradle/wrapper/gradle-wrapper.properties'), re.M)))
 check('no SSL error bypass or native JS bridge', all('handler.proceed(' not in p.read_text(encoding='utf-8-sig') and
       'addJavascriptInterface(' not in p.read_text(encoding='utf-8-sig') for p in SRC.rglob('*.kt')))
+http = (SRC / 'core/net/HttpClients.kt').read_text(encoding='utf-8')
+check('each native factory has an explicit capability profile', all(
+    'builder(SchoolService.' + service in http for service in ['CAS', 'EAS', 'FINANCE_DISABLED']) and
+    'SchoolNetworkInterceptor(SchoolService.GMS)' in gms)
+auth = (SRC / 'data/auth/AuthRepository.kt').read_text(encoding='utf-8')
+check('unused CAS refresh credential is not persisted', 'store.casRefreshToken = result.refreshToken' not in auth and
+      'store.casRefreshToken = null' in auth)
+activity = (SRC / 'MainActivity.kt').read_text(encoding='utf-8')
+check('overlay hiding and obscured touch filtering enabled',
+      'android.permission.HIDE_OVERLAY_WINDOWS' in permissions and 'setHideOverlayWindows(true)' in activity and
+      'FLAG_WINDOW_IS_PARTIALLY_OBSCURED' in activity)
+eas = (SRC / 'data/eas/EasClient.kt').read_text(encoding='utf-8')
+check('general EAS diagnostic transport disabled',
+      'com.zzupocket.app.core.security.SecurityPolicy.requireDiagnostics()' in eas)
 print(json.dumps({'network_requests': 0, 'checks': results, 'passed': all(r['passed'] for r in results)}, indent=2))
 raise SystemExit(0 if all(r['passed'] for r in results) else 1)

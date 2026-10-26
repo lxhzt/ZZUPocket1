@@ -54,6 +54,9 @@ fun LoginScreen(
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
     var passwordVisible by remember { mutableStateOf(false) }
+    androidx.compose.runtime.DisposableEffect(vm) {
+        onDispose { vm.abandonLogin() }
+    }
 
     LaunchedEffect(state.phase) {
         if (state.phase == LoginPhase.Done) onDone()
@@ -97,8 +100,8 @@ fun LoginScreen(
                 ),
             ) {
                 Text(
-                    text = "首次登录会使手机上的「豫见郑大」下线一次（学校统一认证机制导致），之后不会。\n" +
-                        "登录后建议去“安全中心”把本设备设为可信设备，以后就不需要短信验证码了。",
+                    text = "学校统一认证可能影响其他设备的登录状态。\n" +
+                        "请按学校要求完成短信验证，无需为使用本应用修改设备信任设置。",
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(12.dp),
                 )
@@ -179,7 +182,11 @@ fun LoginScreen(
                             )
                         }
                     },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        autoCorrectEnabled = false,
+                        imeAction = ImeAction.Done,
+                    ),
                     modifier = Modifier.fillMaxWidth(),
                 )
                 // 输入体检的提示：中文/全角/过长都在这里当场说清，别等提交后拿到一句"凭据不对"

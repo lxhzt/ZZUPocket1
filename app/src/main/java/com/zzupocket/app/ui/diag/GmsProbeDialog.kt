@@ -85,6 +85,8 @@ fun GmsProbeDialog(
                 view.destroy()
             }
             webRef.value = null
+            // The native GMS jar has its own adopted cookie. Retire browser-wide CAS SSO.
+            WebSessionCleaner.clear()
         }
     }
     // 登录模式直接从 CAS 登录页进：从 /stu 进在部分网络会无限重定向（见 GmsProbe.CAS_SERVICE_ENTRY 注释）
