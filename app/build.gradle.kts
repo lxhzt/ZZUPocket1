@@ -33,6 +33,8 @@ android {
         // ⚠️ 升级判断只认 versionCode（Android 的规则），versionName 是给人看的；
         // 所以改名号（哪怕是"变小"的数字）都不会影响覆盖安装，每次发版 versionCode 必须 +1。
         versionName = "0.32.2-security"
+        testApplicationId = "com.zzupocket.app.secure.securitylab.test"
+        testInstrumentationRunner = "com.zzupocket.app.securitylab.OfflineSecurityInstrumentation"
     }
 
     signingConfigs {
@@ -51,6 +53,13 @@ android {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
         }
+        create("securityLab") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".securitylab"
+            versionNameSuffix = "-offline-lab"
+            matchingFallbacks += listOf("debug")
+            signingConfig = signingConfigs.getByName("debug")
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -66,6 +75,9 @@ android {
             }
         }
     }
+
+    // Instrumentation belongs only to the separate app with INTERNET removed by its manifest.
+    testBuildType = "securityLab"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

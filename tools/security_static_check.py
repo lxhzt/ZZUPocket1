@@ -15,6 +15,109 @@ def check(name, condition):
 def text(path):
     return (ROOT / path).read_text(encoding='utf-8-sig')
 
+
+def restricted_release_signing(source):
+    """Fail closed on signing DSL changes; exempt only the exact separate lab block.
+
+    This is a source regression gate, not a Kotlin interpreter or APK signature check.
+    Comments and quoted braces do not affect block boundaries. New signing syntax
+    requires an explicit gate review rather than silently widening this exemption.
+    """
+    def tokens(value):
+        pattern = r'\s+|//[^\n]*|/\*.*?\*/|""".*?"""|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|[A-Za-z_][A-Za-z_0-9]*|.'
+        parts = []
+        for match in re.finditer(pattern, value, re.S):
+            item = match.group()
+            if item.isspace() or item.startswith('//') or item.startswith('/*'):
+                continue
+            # Expressions inside Kotlin string templates need semantic review.
+            if item.startswith('"') and '${' in item:
+                return None
+            parts.append(item)
+        return parts
+
+    items = tokens(source)
+    if items is None:
+        return False
+    depth = []
+    level = 0
+    for item in items:
+        depth.append(level)
+        if item == '{':
+            level += 1
+        elif item == '}':
+            level -= 1
+        if level < 0:
+            return False
+    if level:
+        return False
+
+    def block(prefix):
+        prefix = tokens(prefix)
+        starts = [i + len(prefix) - 1 for i in range(len(items) - len(prefix) + 1)
+                  if items[i:i + len(prefix)] == prefix]
+        if len(starts) != 1:
+            return None
+        start = starts[0]
+        for end in range(start + 1, len(items)):
+            if items[end] == '}' and depth[end] == depth[start] + 1:
+                return start, end
+        return None
+
+    android = block('android {')
+    build_types = block('buildTypes {')
+    signing = block('signingConfigs {')
+    lab = block('create("securityLab") {')
+    release = block('release {')
+    if any(part is None for part in (android, build_types, signing, lab, release)):
+        return False
+    if not (android[0] < build_types[0] < build_types[1] < android[1] and
+            android[0] < signing[0] < signing[1] < android[1] and
+            build_types[0] < lab[0] < lab[1] < build_types[1] and
+            build_types[0] < release[0] < release[1] < build_types[1] and
+            depth[build_types[0]] == depth[android[0]] + 1 and
+            depth[signing[0]] == depth[android[0]] + 1 and
+            depth[lab[0]] == depth[build_types[0]] + 1 and
+            depth[release[0]] == depth[build_types[0]] + 1):
+        return False
+    expected_lab = tokens('''
+        initWith(getByName("debug"))
+        applicationIdSuffix = ".securitylab"
+        versionNameSuffix = "-offline-lab"
+        matchingFallbacks += listOf("debug")
+        signingConfig = signingConfigs.getByName("debug")
+    ''')
+    expected_owner = tokens('''
+        if (hasReleaseSigning) {
+            create("zzupocket") {
+                storeFile = releaseStoreFile
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
+    ''')
+    expected_release = tokens('''
+        if (hasReleaseSigning) {
+            signingConfig = signingConfigs.getByName("zzupocket")
+        } else {
+            signingConfig = null
+        }
+    ''')
+    body = items[release[0] + 1:release[1]]
+    if (items[lab[0] + 1:lab[1]] != expected_lab or
+            items[signing[0] + 1:signing[1]] != expected_owner or
+            sum(body[i:i + len(expected_release)] == expected_release
+                for i in range(len(body) - len(expected_release) + 1)) != 1):
+        return False
+    # The approved lab assignment and owner/null release branch account for every
+    # signing access. An override outside the release block cannot escape this check.
+    counts = {'buildTypes': 1, 'release': 1, 'signingConfigs': 3, 'signingConfig': 3,
+              'initWith': 1, 'setSigningConfig': 0, '"debug"': 3, '"release"': 0,
+              '"signingConfig"': 0, '"signingConfigs"': 0}
+    return all(items.count(name) == count for name, count in counts.items())
+
+
 policy = (SRC / 'core/security/SecurityPolicy.kt').read_text(encoding='utf-8')
 for flag in ['FINANCIAL_NETWORK_ENABLED', 'LIBRARY_ENABLED', 'NETWORK_DIAGNOSTICS_ENABLED']:
     check(flag + ' disabled', bool(re.search(r'const val ' + flag + r'\s*=\s*false', policy)))
@@ -46,7 +149,7 @@ check('all ecard request sites guarded', 'client.newCall(' not in ecard and
 gms = (SRC / 'data/gms/GmsClient.kt').read_text(encoding='utf-8')
 check('native GMS redirects disabled and policy installed', '.followRedirects(false)' in gms and
       '.followSslRedirects(false)' in gms and '.addInterceptor(SchoolNetworkInterceptor(SchoolService.GMS))' in gms)
-check('release has no debug signing fallback', 'signingConfig = signingConfigs.getByName("debug")' not in text('app/build.gradle.kts'))
+check('release has no debug signing fallback', restricted_release_signing(text('app/build.gradle.kts')))
 check('fork has separate application data', 'applicationId = "com.zzupocket.app.secure"' in text('app/build.gradle.kts'))
 check('Gradle distribution integrity pinned', bool(re.search(r'^distributionSha256Sum=[a-f0-9]{64}$',
       text('gradle/wrapper/gradle-wrapper.properties'), re.M)))

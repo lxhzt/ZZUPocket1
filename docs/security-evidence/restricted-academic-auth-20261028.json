@@ -1,0 +1,1992 @@
+{
+  "format_version": 1,
+  "date": "2026-10-28",
+  "source_base_commit": "d0ca59e0ff5a17ea40ba581216a972dad15d278c",
+  "scope": "Official public documentation and static schemas; no authenticated, token issuance, data or financial API calls",
+  "program_http_gets": 23,
+  "response_body_bytes": 1777809,
+  "web_search_and_index_reads_counted_separately": true,
+  "resources": [
+    {
+      "url": "https://www5.zzu.edu.cn/net/info/1096/2774.htm",
+      "method": "GET",
+      "at_utc": "2026-10-28T08:46:56.901504+00:00",
+      "status": 200,
+      "headers": {
+        "X-Frame-Options": "SAMEORIGIN",
+        "Content-Length": "23383",
+        "Cache-Control": "private, max-age=600",
+        "X-Content-Type-Options": "nosniff",
+        "Content-Type": "text/html"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 23383,
+      "sha256": "7c41df6806af81a003bbbc60999f0b3ede70622fa5003339ce2e1cd07e08d25d",
+      "script_sources_not_fetched": [
+        "https://www5.zzu.edu.cn/net/dfiles/11240/js/jquery/jquery.min.js",
+        "https://www5.zzu.edu.cn/net/dfiles/11240/js/wzq.sitevisit.js",
+        "https://www5.zzu.edu.cn/net/dfiles/11240/js/wzq.tags.js",
+        "https://www5.zzu.edu.cn/net/dfiles/11240/js/page.js",
+        "https://www5.zzu.edu.cn/net/_sitegray/_sitegray.js",
+        "https://www5.zzu.edu.cn/system/resource/js/vsbscreen.min.js",
+        "https://www5.zzu.edu.cn/system/resource/js/counter.js",
+        "https://www5.zzu.edu.cn/net/_dwr/engine.js",
+        "https://www5.zzu.edu.cn/net/_dwr/util.js",
+        "https://www5.zzu.edu.cn/net/_dwr/interface/NewsSearchDWR.js",
+        "https://www5.zzu.edu.cn/system/resource/js/vsb_news_search.js",
+        "https://www5.zzu.edu.cn/system/resource/js/vsb_news_search_entry.js",
+        "https://www5.zzu.edu.cn/system/resource/js/language.js",
+        "https://www5.zzu.edu.cn/system/resource/js/base64.js",
+        "https://www5.zzu.edu.cn/system/resource/js/formfunc.js",
+        "https://www5.zzu.edu.cn/system/resource/js/base64.js",
+        "https://www5.zzu.edu.cn/system/resource/js/dynclicks.js",
+        "https://www5.zzu.edu.cn/net/_dwr/interface/NewsvoteDWR.js",
+        "https://www5.zzu.edu.cn/net/_dwr/engine.js",
+        "https://www5.zzu.edu.cn/system/resource/js/news/newscontent.js",
+        "https://www5.zzu.edu.cn/system/resource/js/photoswipe/3.0.5.1/klass.min.js",
+        "https://www5.zzu.edu.cn/system/resource/js/ajax.js",
+        "https://www5.zzu.edu.cn/system/resource/js/jquery/jquery-latest.min.js",
+        "https://www5.zzu.edu.cn/system/resource/js/openlink.js",
+        "https://www5.zzu.edu.cn/system/resource/js/news/mp4video.js",
+        "https://www5.zzu.edu.cn/net/dfiles/11240/net/js/bootstrap.min.js",
+        "https://www5.zzu.edu.cn/net/dfiles/11240/net/js/modernizr.js",
+        "https://www5.zzu.edu.cn/net/dfiles/11240/net/js/jquery.flexslider-min.js",
+        "https://www5.zzu.edu.cn/net/dfiles/11240/net/js/owl.carousel.min.js",
+        "https://www5.zzu.edu.cn/net/dfiles/11240/net/js/revolution-slider/js/jquery.themepunch.plugins.min.js",
+        "https://www5.zzu.edu.cn/net/dfiles/11240/net/js/revolution-slider/js/jquery.themepunch.revolution.min.js",
+        "https://www5.zzu.edu.cn/net/dfiles/11240/net/js/chosen.jquery.min.js",
+        "https://www5.zzu.edu.cn/net/dfiles/11240/net/js/jackbox/js/jackbox-packed.min.js",
+        "https://www5.zzu.edu.cn/net/dfiles/11240/net/js/zoomsl-3.0.min.js",
+        "https://www5.zzu.edu.cn/net/dfiles/11240/net/js/script.js"
+      ],
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.5
+    },
+    {
+      "url": "https://open.s.zzu.edu.cn/",
+      "method": "GET",
+      "at_utc": "2026-10-28T08:46:58.449409+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html",
+        "Content-Length": "147"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 147,
+      "sha256": "7f8a4842fbe97779c098e470ab9a55f3e7f5e9ca163b6364969542d75675c151",
+      "script_sources_not_fetched": [],
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.094
+    },
+    {
+      "url": "https://open.s.zzu.edu.cn/dev-portal/",
+      "method": "GET",
+      "at_utc": "2026-10-28T08:51:34.971271+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html",
+        "Content-Length": "995"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 995,
+      "sha256": "9ac7d9e3c5c5827039527511636e0abc4312bfd076c06b44fa9e34e3a93d68d7",
+      "script_sources_not_fetched": [
+        "https://open.s.zzu.edu.cn/dev-portal/static/js/chunk-vendors.8144d38f.js",
+        "https://open.s.zzu.edu.cn/dev-portal/static/js/app.75e4b850.js",
+        "https://open.s.zzu.edu.cn/dev-portal/static/js/chunk-vendors-legacy.696af9e4.js",
+        "https://open.s.zzu.edu.cn/dev-portal/static/js/app-legacy.1d253e2f.js"
+      ],
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.078
+    },
+    {
+      "url": "https://www5.zzu.edu.cn/net/zhengzhoudaxuekaifangpingtaishiyongshenpibiao.pdf",
+      "method": "GET",
+      "at_utc": "2026-10-28T08:51:36.058647+00:00",
+      "status": 200,
+      "headers": {
+        "X-Frame-Options": "SAMEORIGIN",
+        "Content-Length": "176053",
+        "X-Content-Type-Options": "nosniff",
+        "Content-Type": "application/pdf"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 176053,
+      "sha256": "7265738873a04b439d8a2f55f06cbedb44502d446c80ff31fd08d4daa53874cf",
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.11
+    },
+    {
+      "url": "https://www5.zzu.edu.cn/system/_content/download.jsp?owner=1327566538&urltype=news.DownloadAttachUrl&wbfileid=15019196",
+      "method": "GET",
+      "at_utc": "2026-10-28T08:51:37.164359+00:00",
+      "status": 200,
+      "headers": {
+        "X-Frame-Options": "SAMEORIGIN",
+        "Cache-Control": "no-store",
+        "Content-Type": "text/html;charset=UTF-8",
+        "Content-Length": "3805",
+        "X-Content-Type-Options": "nosniff"
+      },
+      "set_cookie_attributes": [
+        {
+          "name": "JSESSIONID",
+          "secure": false,
+          "http_only": true,
+          "same_site": null,
+          "domain": null,
+          "path": "/"
+        }
+      ],
+      "bytes": 3805,
+      "sha256": "f449bd1ab2daa4bb973d4f390c5b2c9512c5fd851478a9adf6ef7924f7308dbd",
+      "script_sources_not_fetched": [],
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.078
+    },
+    {
+      "url": "https://open.s.zzu.edu.cn/dev-portal/static/js/app.75e4b850.js",
+      "method": "GET",
+      "at_utc": "2026-10-28T08:54:05.587987+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/javascript",
+        "Content-Length": "46337"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 46337,
+      "sha256": "03fa5a7b5803ad0abb3f62c138abc042941e8b96f3d64159637186581770626f",
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.203
+    },
+    {
+      "url": "https://open.s.zzu.edu.cn/dev-portal/serverConfig.json",
+      "method": "GET",
+      "at_utc": "2026-10-28T08:58:41.530417+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "Content-Length": "1747"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 1747,
+      "sha256": "a2dac98d4db92902f45d24ad488a4c454fc622b45bb4749119c2289eb63574c1",
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.047
+    },
+    {
+      "url": "https://open.s.zzu.edu.cn/docs/index.html",
+      "method": "GET",
+      "at_utc": "2026-10-28T09:00:38.484929+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html",
+        "Content-Length": "4573"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 4573,
+      "sha256": "ed2a3456b1d76eb48939e5115c906c2fad9b0956b702c1c4d74ddb41a0a89d7c",
+      "script_sources_not_fetched": [
+        "https://open.s.zzu.edu.cn/docs/assets/docsify@4/lib/docsify.min.js",
+        "https://open.s.zzu.edu.cn/docs/assets/docsify@4/lib/plugins/search.min.js",
+        "https://open.s.zzu.edu.cn/docs/assets/docsify@4/lib/plugins/external-script.min.js",
+        "https://open.s.zzu.edu.cn/docs/assets/prismjs@1/components/prism-markup.min.js",
+        "https://open.s.zzu.edu.cn/docs/assets/prismjs@1/components/prism-bash.min.js",
+        "https://open.s.zzu.edu.cn/docs/assets/prismjs@1/components/prism-javascript.min.js",
+        "https://open.s.zzu.edu.cn/docs/assets/prismjs@1/components/prism-java.min.js",
+        "https://open.s.zzu.edu.cn/docs/assets/prismjs@1/components/prism-yaml.min.js",
+        "https://open.s.zzu.edu.cn/docs/assets/prismjs@1/components/prism-vim.min.js",
+        "https://open.s.zzu.edu.cn/docs/assets/prismjs@1/components/prism-sql.min.js"
+      ],
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.047
+    },
+    {
+      "url": "https://poa.s.zzu.edu.cn/_docs/authz/v1/latest/",
+      "method": "GET",
+      "at_utc": "2026-10-28T09:00:39.548654+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html",
+        "Content-Length": "519"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 519,
+      "sha256": "e86f94f32bc9c11d52ee8bb21589cbac561a564cbd456d2fb362976d69084560",
+      "script_sources_not_fetched": [
+        "https://poa.s.zzu.edu.cn/_docs/assets/js/redoc.standalone.js"
+      ],
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.172
+    },
+    {
+      "url": "https://poa.s.zzu.edu.cn/_docs/idToken/v1/latest/",
+      "method": "GET",
+      "at_utc": "2026-10-28T09:00:40.726263+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html",
+        "Content-Length": "523"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 523,
+      "sha256": "e531fa80e053acd6020ec6b13e6838e30b0b6d624d227b203ea9c69b1a2b61dd",
+      "script_sources_not_fetched": [
+        "https://poa.s.zzu.edu.cn/_docs/assets/js/redoc.standalone.js"
+      ],
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.047
+    },
+    {
+      "url": "https://poa.s.zzu.edu.cn/_docs/authz/v1/latest/authz-v1-2025_03_08_01_27_38.yaml",
+      "method": "GET",
+      "at_utc": "2026-10-28T09:01:39.401028+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/octet-stream",
+        "Content-Length": "18108"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 18108,
+      "sha256": "98cc63b2b98def084439b8c951ff5c4a4a29645d4c086b6b72ab3186e87998cc",
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.063
+    },
+    {
+      "url": "https://poa.s.zzu.edu.cn/_docs/idToken/v1/latest/idToken-v1-2025_03_25_13_28_26.yaml",
+      "method": "GET",
+      "at_utc": "2026-10-28T09:01:40.460632+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/octet-stream",
+        "Content-Length": "2413"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 2413,
+      "sha256": "bee300191d637967f07aafeee7ced194d1ef3dbea825bd881278aee9d86e9e5a",
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.062
+    },
+    {
+      "url": "https://open.s.zzu.edu.cn/docs/newguide/3.technology.md",
+      "method": "GET",
+      "at_utc": "2026-10-28T09:01:41.519765+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/octet-stream",
+        "Content-Length": "1599"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 1599,
+      "sha256": "3c697abf03e29865d03f8dc1b4485d5d8dc980afeed6cd3f4c4b4e32a755373f",
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.078
+    },
+    {
+      "url": "https://open.s.zzu.edu.cn/docs/newguide/5.access.md",
+      "method": "GET",
+      "at_utc": "2026-10-28T09:01:42.607716+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/octet-stream",
+        "Content-Length": "536"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 536,
+      "sha256": "2fc2840c76153ece5b0674b6db08aad1b679fcd31247a170de70ff64473c011e",
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.11
+    },
+    {
+      "url": "https://open.s.zzu.edu.cn/docs/newguide/1.introduce.md",
+      "method": "GET",
+      "at_utc": "2026-10-28T09:01:43.716528+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/octet-stream",
+        "Content-Length": "2814"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 2814,
+      "sha256": "4185f6b0a2f8ac8d20495040b2ba06cd1f4ecbf92097f9e0c5abe54a0a75440e",
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.093
+    },
+    {
+      "url": "https://open.s.zzu.edu.cn/docs/newguide/6.openAPI.md",
+      "method": "GET",
+      "at_utc": "2026-10-28T10:31:35.366598+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/octet-stream",
+        "Content-Length": "1890"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 1890,
+      "sha256": "09e42f780539de16c6ab32ee79e017cd5744c5ffed3d945061f3fbac8abf20eb",
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.14
+    },
+    {
+      "url": "https://poa.s.zzu.edu.cn/_docs",
+      "method": "GET",
+      "at_utc": "2026-10-28T10:31:36.528863+00:00",
+      "status": 301,
+      "headers": {
+        "Content-Type": "text/html",
+        "Content-Length": "169",
+        "Location": "http://poa.s.zzu.edu.cn/_docs/"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "script_sources_not_fetched": [],
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.094
+    },
+    {
+      "url": "https://poa.s.zzu.edu.cn/_docs/",
+      "method": "GET",
+      "at_utc": "2026-10-28T10:32:40.276640+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html",
+        "Content-Length": "30798"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 30798,
+      "sha256": "1761875cbb34ecbe09400d123d8167d106cf27176f46cf8dabb88cb6282fbed1",
+      "script_sources_not_fetched": [
+        "https://poa.s.zzu.edu.cn/_docs/assets/js/babel.min.js",
+        "https://poa.s.zzu.edu.cn/_docs/assets/js/babel.polyfill.js",
+        "https://poa.s.zzu.edu.cn/_docs/assets/js/vue.min.js",
+        "https://poa.s.zzu.edu.cn/_docs/assets/js/element.js"
+      ],
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.125
+    },
+    {
+      "url": "https://poa.s.zzu.edu.cn/_docs/dataMarket/v1/latest/",
+      "method": "GET",
+      "at_utc": "2026-10-28T10:35:10.627947+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html",
+        "Content-Length": "529"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 529,
+      "sha256": "2087d00825e79b360a1943269eff6f30187132c2f804ac91c69cd484dc8353c0",
+      "script_sources_not_fetched": [
+        "https://poa.s.zzu.edu.cn/_docs/assets/js/redoc.standalone.js"
+      ],
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.079
+    },
+    {
+      "url": "https://poa.s.zzu.edu.cn/_docs/date/v1/latest/",
+      "method": "GET",
+      "at_utc": "2026-10-28T10:35:11.836939+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html",
+        "Content-Length": "517"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 517,
+      "sha256": "ad6264585c1276581f277b62590919e19526429467486207208acbbf4b4a9edf",
+      "script_sources_not_fetched": [
+        "https://poa.s.zzu.edu.cn/_docs/assets/js/redoc.standalone.js"
+      ],
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.062
+    },
+    {
+      "url": "https://poa.s.zzu.edu.cn/_docs/dataMarket/v1/latest/dataMarket-v1-2025_02_13_14_13_52.yaml",
+      "method": "GET",
+      "at_utc": "2026-10-28T10:36:21.152453+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/octet-stream",
+        "Content-Length": "1454390"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 1454390,
+      "sha256": "6a603fce6fd423c414367968232db9d5bc520468a153babecc1d59bc7ecdaebc",
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.375
+    },
+    {
+      "url": "https://poa.s.zzu.edu.cn/_docs/date/v3/latest/",
+      "method": "GET",
+      "at_utc": "2026-10-28T10:36:22.529180+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html",
+        "Content-Length": "517"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 517,
+      "sha256": "e49d181de140833a72a5946baed124c48f2eb1f4a5ddc6e9f19d1c9532643dda",
+      "script_sources_not_fetched": [
+        "https://poa.s.zzu.edu.cn/_docs/assets/js/redoc.standalone.js"
+      ],
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.063
+    },
+    {
+      "url": "https://poa.s.zzu.edu.cn/_docs/date/v3/latest/date-v3-2023_05_17_17_02_37.yaml",
+      "method": "GET",
+      "at_utc": "2026-10-28T10:37:33.874150+00:00",
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/octet-stream",
+        "Content-Length": "5616"
+      },
+      "set_cookie_attributes": [],
+      "bytes": 5616,
+      "sha256": "4cfa72d2825a7a523009b8daa49d7cb2860c2819559e74c1f808fe99acff6795",
+      "contains_public_pem_marker": false,
+      "elapsed_seconds": 0.079
+    }
+  ],
+  "retrieval_controls": {
+    "exact_url_allowlist": true,
+    "https_443": true,
+    "default_tls_verification": true,
+    "redirects_followed": false,
+    "cookie_values_saved_or_replayed": false,
+    "javascript_executed": false,
+    "captcha_bypassed_or_solved": false,
+    "registration_or_application_submitted": false,
+    "account_credentials_or_fake_tokens_sent": false,
+    "live_token_endpoints_called": 0,
+    "business_data_or_finance_calls": 0,
+    "ports_or_directories_scanned": false,
+    "phase_request_budget": 23
+  },
+  "tool_sha256": "43ea763514c98d6fa87298b9e58e1672c491b8c4fe0063213f696ce20ad3a055",
+  "documented_mechanism": {
+    "flow": "OAuth2 clientCredentials",
+    "unit": "Application-approved scope, possibly containing multiple APIs",
+    "client_id_and_secret_required_by_guide": true,
+    "field_selection_application_documented": true,
+    "actual_issued_application_credential_obtained": false,
+    "actual_scope_enforcement_tested": false
+  },
+  "academic_scope_candidates": [
+    {
+      "summary": "研究生课表信息",
+      "path": "/open_api/customization/view_echo_papa/full",
+      "method": "post",
+      "scopes": [
+        "dataMarket:v1:view_echo_papa"
+      ],
+      "parameter_section": "",
+      "request_body_section": "",
+      "schema_refs": [],
+      "response_row_fields": [
+        {
+          "name": "WYBS",
+          "title": "唯一标识",
+          "type": "string"
+        },
+        {
+          "name": "PKBH",
+          "title": "排课编号",
+          "type": "string"
+        },
+        {
+          "name": "XNXQ",
+          "title": "学年学期",
+          "type": "string"
+        },
+        {
+          "name": "XH",
+          "title": "学号",
+          "type": "string"
+        },
+        {
+          "name": "KKYXBM",
+          "title": "开课院系编码",
+          "type": "string"
+        },
+        {
+          "name": "KKZYBM",
+          "title": "开课专业编码",
+          "type": "string"
+        },
+        {
+          "name": "KCBM",
+          "title": "课程编码",
+          "type": "string"
+        },
+        {
+          "name": "ZC",
+          "title": "周次",
+          "type": "string"
+        },
+        {
+          "name": "QSZ",
+          "title": "起始周",
+          "type": "string"
+        },
+        {
+          "name": "ZZZ",
+          "title": "终止周",
+          "type": "string"
+        },
+        {
+          "name": "DSZ",
+          "title": "单双周",
+          "type": "string"
+        },
+        {
+          "name": "XQJ",
+          "title": "星期几",
+          "type": "string"
+        },
+        {
+          "name": "JC",
+          "title": "节次",
+          "type": "string"
+        },
+        {
+          "name": "JXDD",
+          "title": "教学地点",
+          "type": "string"
+        },
+        {
+          "name": "JSLXM",
+          "title": "教室类型码",
+          "type": "string"
+        },
+        {
+          "name": "XF",
+          "title": "学分",
+          "type": "string"
+        },
+        {
+          "name": "LLXS",
+          "title": "理论学时",
+          "type": "string"
+        },
+        {
+          "name": "SYXS",
+          "title": "实验学时",
+          "type": "string"
+        },
+        {
+          "name": "SXXS",
+          "title": "实训学时",
+          "type": "string"
+        },
+        {
+          "name": "ZXS",
+          "title": "总学时",
+          "type": "string"
+        },
+        {
+          "name": "SKJSGH",
+          "title": "授课教师工号",
+          "type": "string"
+        },
+        {
+          "name": "SKJSXM",
+          "title": "授课教师姓名",
+          "type": "string"
+        },
+        {
+          "name": "KCXZM",
+          "title": "课程性质码",
+          "type": "string"
+        },
+        {
+          "name": "KCSXM",
+          "title": "课程属性码",
+          "type": "string"
+        },
+        {
+          "name": "KCJBM",
+          "title": "课程级别码",
+          "type": "string"
+        },
+        {
+          "name": "KCCCM",
+          "title": "课程层次码",
+          "type": "string"
+        },
+        {
+          "name": "KCLBM",
+          "title": "课程类别码",
+          "type": "string"
+        },
+        {
+          "name": "SKFSM",
+          "title": "授课方式码",
+          "type": "string"
+        },
+        {
+          "name": "KSXSM",
+          "title": "考试形式码",
+          "type": "string"
+        },
+        {
+          "name": "KSFSM",
+          "title": "考试方式码",
+          "type": "string"
+        },
+        {
+          "name": "KSXZM",
+          "title": "考试性质码",
+          "type": "string"
+        },
+        {
+          "name": "TSTAMP",
+          "title": "时间戳",
+          "type": "string"
+        },
+        {
+          "name": "KCJBMDMMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "KCCCMDMMC",
+          "title": "代码名称",
+          "type": "string"
+        },
+        {
+          "name": "KCLBMDMMC",
+          "title": "代码名称",
+          "type": "string"
+        },
+        {
+          "name": "SKFSMDMMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        }
+      ],
+      "request_body_declared": false,
+      "request_parameters_declared": false
+    },
+    {
+      "summary": "研究生排课信息",
+      "path": "/open_api/customization/view_delta_yankee/full",
+      "method": "post",
+      "scopes": [
+        "dataMarket:v1:view_delta_yankee"
+      ],
+      "parameter_section": "",
+      "request_body_section": "",
+      "schema_refs": [],
+      "response_row_fields": [
+        {
+          "name": "WYBS",
+          "title": "唯一标识",
+          "type": "string"
+        },
+        {
+          "name": "PKBH",
+          "title": "排课编号",
+          "type": "string"
+        },
+        {
+          "name": "KKXNXQ",
+          "title": "开课学年学期",
+          "type": "string"
+        },
+        {
+          "name": "KKYXBM",
+          "title": "开课院系编码",
+          "type": "string"
+        },
+        {
+          "name": "KKYXMC",
+          "title": "院系名称",
+          "type": "string"
+        },
+        {
+          "name": "KKZYBM",
+          "title": "开课专业编码",
+          "type": "string"
+        },
+        {
+          "name": "KCBM",
+          "title": "课程编码",
+          "type": "string"
+        },
+        {
+          "name": "KCMC",
+          "title": "课程名称",
+          "type": "string"
+        },
+        {
+          "name": "JXBMC",
+          "title": "教学班名称",
+          "type": "object"
+        },
+        {
+          "name": "ZC",
+          "title": "周次",
+          "type": "string"
+        },
+        {
+          "name": "QSZ",
+          "title": "起始周",
+          "type": "string"
+        },
+        {
+          "name": "ZZZ",
+          "title": "终止周",
+          "type": "string"
+        },
+        {
+          "name": "XQJ",
+          "title": "星期几",
+          "type": "string"
+        },
+        {
+          "name": "JC",
+          "title": "节次",
+          "type": "string"
+        },
+        {
+          "name": "DSZ",
+          "title": "单双周",
+          "type": "string"
+        },
+        {
+          "name": "JXDD",
+          "title": "教学地点",
+          "type": "string"
+        },
+        {
+          "name": "JSLXM",
+          "title": "教室类型码",
+          "type": "string"
+        },
+        {
+          "name": "SKJSGH",
+          "title": "授课教师工号",
+          "type": "string"
+        },
+        {
+          "name": "SKJSXM",
+          "title": "授课教师姓名",
+          "type": "string"
+        },
+        {
+          "name": "SFZJJS",
+          "title": "是否主讲教师",
+          "type": "string"
+        },
+        {
+          "name": "LLXS",
+          "title": "理论学时",
+          "type": "string"
+        },
+        {
+          "name": "SYXS",
+          "title": "实验学时",
+          "type": "string"
+        },
+        {
+          "name": "SXXS",
+          "title": "实训学时",
+          "type": "string"
+        },
+        {
+          "name": "ZXS",
+          "title": "总学时",
+          "type": "string"
+        },
+        {
+          "name": "XKRSXD",
+          "title": "选课人数限定",
+          "type": "string"
+        },
+        {
+          "name": "KCXZM",
+          "title": "课程性质码",
+          "type": "string"
+        },
+        {
+          "name": "KCSXM",
+          "title": "课程属性码",
+          "type": "string"
+        },
+        {
+          "name": "KSXSM",
+          "title": "考试形式码",
+          "type": "string"
+        },
+        {
+          "name": "KSFSM",
+          "title": "考试方式码",
+          "type": "string"
+        },
+        {
+          "name": "KSXZM",
+          "title": "考试性质码",
+          "type": "string"
+        },
+        {
+          "name": "PKJGM",
+          "title": "排课结果码",
+          "type": "string"
+        },
+        {
+          "name": "XQBM",
+          "title": "校区编码",
+          "type": "string"
+        },
+        {
+          "name": "SKNJ",
+          "title": "上课年级",
+          "type": "string"
+        },
+        {
+          "name": "TKRS",
+          "title": "听课人数",
+          "type": "string"
+        },
+        {
+          "name": "JXFZZY",
+          "title": "教学辅助资源",
+          "type": "string"
+        },
+        {
+          "name": "KCJBM",
+          "title": "课程级别码",
+          "type": "string"
+        },
+        {
+          "name": "KCCCM",
+          "title": "课程层次码",
+          "type": "string"
+        },
+        {
+          "name": "KCLBM",
+          "title": "课程类别码",
+          "type": "string"
+        },
+        {
+          "name": "TSTAMP",
+          "title": "时间戳",
+          "type": "string"
+        },
+        {
+          "name": "KCXZMDMMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "KCSXMDMMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "KSXSMDMMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "KSFSMDMMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "KSXZMDMMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "KCJBMDMMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "KCCCMDMMC",
+          "title": "代码名称",
+          "type": "string"
+        },
+        {
+          "name": "KCLBMDMMC",
+          "title": "代码名称",
+          "type": "string"
+        }
+      ],
+      "request_body_declared": false,
+      "request_parameters_declared": false
+    },
+    {
+      "summary": "研究生教室基本信息",
+      "path": "/open_api/customization/view_delta_whisky/full",
+      "method": "post",
+      "scopes": [
+        "dataMarket:v1:view_delta_whisky"
+      ],
+      "parameter_section": "",
+      "request_body_section": "",
+      "schema_refs": [],
+      "response_row_fields": [
+        {
+          "name": "JSBM",
+          "title": "教室编码",
+          "type": "string"
+        },
+        {
+          "name": "JSMC",
+          "title": "教室名称",
+          "type": "string"
+        },
+        {
+          "name": "XQBM",
+          "title": "校区编码",
+          "type": "string"
+        },
+        {
+          "name": "JXLBM",
+          "title": "教学楼编码",
+          "type": "string"
+        },
+        {
+          "name": "SZLC",
+          "title": "所在楼层",
+          "type": "string"
+        },
+        {
+          "name": "ZWS",
+          "title": "座位数",
+          "type": "string"
+        },
+        {
+          "name": "KSZWS",
+          "title": "考试座位数",
+          "type": "string"
+        },
+        {
+          "name": "JSLXM",
+          "title": "教室类型码",
+          "type": "string"
+        },
+        {
+          "name": "JSMS",
+          "title": "教室描述",
+          "type": "string"
+        },
+        {
+          "name": "SSYXM",
+          "title": "所属院系码",
+          "type": "string"
+        },
+        {
+          "name": "SSYXMC",
+          "title": "院系名称",
+          "type": "string"
+        },
+        {
+          "name": "SFKY",
+          "title": "是否可用",
+          "type": "string"
+        },
+        {
+          "name": "TSTAMP",
+          "title": "时间戳",
+          "type": "string"
+        },
+        {
+          "name": "JSLXMDMMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "SFKYDMMC",
+          "title": "代码名称",
+          "type": "string"
+        }
+      ],
+      "request_body_declared": false,
+      "request_parameters_declared": false
+    },
+    {
+      "summary": "本专科生排课信息",
+      "path": "/open_api/customization/tgxjxbzkspkxx_alpha/full",
+      "method": "post",
+      "scopes": [
+        "dataMarket:v1:tgxjxbzkspkxx_alpha"
+      ],
+      "parameter_section": "",
+      "request_body_section": "",
+      "schema_refs": [],
+      "response_row_fields": [
+        {
+          "name": "WYBS",
+          "title": "id",
+          "type": "string"
+        },
+        {
+          "name": "PKBH",
+          "title": "排课编号",
+          "type": "string"
+        },
+        {
+          "name": "KKYXBM",
+          "title": "开课院系编码",
+          "type": "string"
+        },
+        {
+          "name": "KKYXMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "KKZYBM",
+          "title": "开课专业编码",
+          "type": "string"
+        },
+        {
+          "name": "KKZYMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "KKBJBM",
+          "title": "开课班级编码",
+          "type": "string"
+        },
+        {
+          "name": "KKBJMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "XNXQ",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "KCBM",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "KCMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "XF",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "ZXS",
+          "title": "总学时",
+          "type": "string"
+        },
+        {
+          "name": "WXS",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "KSSJ",
+          "title": "开始时间",
+          "type": "string"
+        },
+        {
+          "name": "JSSJ",
+          "title": "结束时间",
+          "type": "string"
+        },
+        {
+          "name": "XQJ",
+          "title": "星期几",
+          "type": "string"
+        },
+        {
+          "name": "ZC",
+          "title": "周次",
+          "type": "string"
+        },
+        {
+          "name": "KSJC",
+          "title": "开始节次",
+          "type": "string"
+        },
+        {
+          "name": "JSJC",
+          "title": "结束节次",
+          "type": "string"
+        },
+        {
+          "name": "SKJSGH",
+          "title": "授课教师工号",
+          "type": "string"
+        },
+        {
+          "name": "SKJSXM",
+          "title": "授课教师姓名",
+          "type": "string"
+        },
+        {
+          "name": "XKRSXD",
+          "title": "选课人数限定",
+          "type": "string"
+        },
+        {
+          "name": "KSXSM",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "KSXSMDMMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "KSZC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "JXBMC",
+          "title": "教学班名称",
+          "type": "string"
+        },
+        {
+          "name": "JSBM",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "JSMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "TSTAMP",
+          "title": "时间戳",
+          "type": "string"
+        }
+      ],
+      "request_body_declared": false,
+      "request_parameters_declared": false
+    },
+    {
+      "summary": "本专科生课程信息",
+      "path": "/open_api/customization/view_papa/full",
+      "method": "post",
+      "scopes": [
+        "dataMarket:v1:view_papa"
+      ],
+      "parameter_section": "",
+      "request_body_section": "",
+      "schema_refs": [],
+      "response_row_fields": [
+        {
+          "name": "KCBM",
+          "title": "课程编码",
+          "type": "string"
+        },
+        {
+          "name": "KCMC",
+          "title": "课程名称",
+          "type": "object"
+        },
+        {
+          "name": "KCYWMC",
+          "title": "课程英文名称",
+          "type": "string"
+        },
+        {
+          "name": "GSYXBM",
+          "title": "归属院系编码",
+          "type": "string"
+        },
+        {
+          "name": "PYCCM",
+          "title": "培养层次码",
+          "type": "string"
+        },
+        {
+          "name": "PYCCMDMMC",
+          "title": "代码名称",
+          "type": "string"
+        },
+        {
+          "name": "KCZLM",
+          "title": "课程种类码",
+          "type": "string"
+        },
+        {
+          "name": "KCZLMDMMC",
+          "title": "代码名称",
+          "type": "string"
+        },
+        {
+          "name": "KCLBM",
+          "title": "课程类别码",
+          "type": "string"
+        },
+        {
+          "name": "KCLBMDMMC",
+          "title": "代码名称",
+          "type": "string"
+        },
+        {
+          "name": "XF",
+          "title": "学分",
+          "type": "string"
+        },
+        {
+          "name": "LLXS",
+          "title": "理论学时",
+          "type": "string"
+        },
+        {
+          "name": "SYXS",
+          "title": "实验学时",
+          "type": "string"
+        },
+        {
+          "name": "SJXS",
+          "title": "实践学时",
+          "type": "string"
+        },
+        {
+          "name": "SJIANXS",
+          "title": "实践学时",
+          "type": "string"
+        },
+        {
+          "name": "WXS",
+          "title": "周学时",
+          "type": "string"
+        },
+        {
+          "name": "ZXS",
+          "title": "总学时",
+          "type": "string"
+        },
+        {
+          "name": "ZS",
+          "title": "周数",
+          "type": "string"
+        },
+        {
+          "name": "KSFSM",
+          "title": "考试方式码",
+          "type": "string"
+        },
+        {
+          "name": "KSFSMDMMC",
+          "title": "代码名称",
+          "type": "string"
+        },
+        {
+          "name": "CJJLFSM",
+          "title": "成绩记录方式码",
+          "type": "string"
+        },
+        {
+          "name": "CJJLFSMDMMC",
+          "title": "代码名称",
+          "type": "string"
+        },
+        {
+          "name": "SFJSJD",
+          "title": "是否计算绩点",
+          "type": "string"
+        },
+        {
+          "name": "SFJSJDDMMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "SFJDK",
+          "title": "是否阶段课",
+          "type": "string"
+        },
+        {
+          "name": "SFJDKDMMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "SFWXJLKC",
+          "title": "是否外校交流课程",
+          "type": "string"
+        },
+        {
+          "name": "SFWXJLKCDMMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "SFSYK",
+          "title": "是否实验课",
+          "type": "string"
+        },
+        {
+          "name": "SFSYKDMMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "SFSSJZZKC",
+          "title": "是否是实践专周课程",
+          "type": "string"
+        },
+        {
+          "name": "SFSSJZZKCDMMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "SFYXKCTD",
+          "title": "是否允许课程替代",
+          "type": "string"
+        },
+        {
+          "name": "SFYXKCTDDMMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "JC",
+          "title": "教材",
+          "type": "string"
+        },
+        {
+          "name": "CKSM",
+          "title": "参考书目",
+          "type": "string"
+        },
+        {
+          "name": "BZ",
+          "title": "备注",
+          "type": "object"
+        },
+        {
+          "name": "SFYX",
+          "title": "是否有效",
+          "type": "string"
+        },
+        {
+          "name": "SFYXDMMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "TSTAMP",
+          "title": "时间戳",
+          "type": "string"
+        }
+      ],
+      "request_body_declared": false,
+      "request_parameters_declared": false
+    },
+    {
+      "summary": "本专科生课表信息",
+      "path": "/open_api/customization/view_lima/full",
+      "method": "post",
+      "scopes": [
+        "dataMarket:v1:view_lima"
+      ],
+      "parameter_section": "",
+      "request_body_section": "",
+      "schema_refs": [],
+      "response_row_fields": [
+        {
+          "name": "WYBS",
+          "title": "唯一标识",
+          "type": "string"
+        },
+        {
+          "name": "XNXQ",
+          "title": "学年学期",
+          "type": "string"
+        },
+        {
+          "name": "XH",
+          "title": "学号",
+          "type": "string"
+        },
+        {
+          "name": "XM",
+          "title": "姓名",
+          "type": "string"
+        },
+        {
+          "name": "KKYXBM",
+          "title": "开课院系编码",
+          "type": "string"
+        },
+        {
+          "name": "KKYXMC",
+          "title": "开课院系名称",
+          "type": "string"
+        },
+        {
+          "name": "KKZYBM",
+          "title": "开课专业编码",
+          "type": "string"
+        },
+        {
+          "name": "KKZYMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "KKBJBM",
+          "title": "开课班级编码",
+          "type": "string"
+        },
+        {
+          "name": "KKBJMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "KCBM",
+          "title": "课程编码",
+          "type": "string"
+        },
+        {
+          "name": "KCMC",
+          "title": "课程名称",
+          "type": "string"
+        },
+        {
+          "name": "ZC",
+          "title": "周次",
+          "type": "string"
+        },
+        {
+          "name": "QSZ",
+          "title": "起始周",
+          "type": "string"
+        },
+        {
+          "name": "ZZZ",
+          "title": "终止周",
+          "type": "string"
+        },
+        {
+          "name": "XQJ",
+          "title": "星期几",
+          "type": "string"
+        },
+        {
+          "name": "SKSJ",
+          "title": "授课时间",
+          "type": "string"
+        },
+        {
+          "name": "JXDD",
+          "title": "教学地点",
+          "type": "string"
+        },
+        {
+          "name": "JSLXM",
+          "title": "教室类型码",
+          "type": "string"
+        },
+        {
+          "name": "JSLXMDMMC",
+          "title": "代码名称",
+          "type": "string"
+        },
+        {
+          "name": "KSXSM",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "KSXSMDMMC",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "JXBMC",
+          "title": "教学班名称",
+          "type": "object"
+        },
+        {
+          "name": "TSTAMP",
+          "title": "时间戳",
+          "type": "string"
+        }
+      ],
+      "request_body_declared": false,
+      "request_parameters_declared": false
+    },
+    {
+      "summary": "本专科生教室使用信息",
+      "path": "/open_api/customization/tgxjxbzksjssyxx/full",
+      "method": "post",
+      "scopes": [
+        "dataMarket:v1:tgxjxbzksjssyxx"
+      ],
+      "parameter_section": "",
+      "request_body_section": "",
+      "schema_refs": [],
+      "response_row_fields": [
+        {
+          "name": "WYBS",
+          "title": "唯一标识",
+          "type": "string"
+        },
+        {
+          "name": "JSBM",
+          "title": "教室编码",
+          "type": "string"
+        },
+        {
+          "name": "JSMC",
+          "title": "教室名称",
+          "type": "string"
+        },
+        {
+          "name": "XNXQ",
+          "title": "学年学期",
+          "type": "string"
+        },
+        {
+          "name": "JSSYBM",
+          "title": "教室使用部门",
+          "type": "string"
+        },
+        {
+          "name": "SQRQM",
+          "title": "申请人签名",
+          "type": "string"
+        },
+        {
+          "name": "ZJR",
+          "title": "主讲人",
+          "type": "string"
+        },
+        {
+          "name": "SYKSRQ",
+          "title": "使用开始日期",
+          "type": "string"
+        },
+        {
+          "name": "SYKSSJ",
+          "title": "使用开始时间",
+          "type": "string"
+        },
+        {
+          "name": "SYJSRQ",
+          "title": "使用结束日期",
+          "type": "string"
+        },
+        {
+          "name": "SYJSSJ",
+          "title": "使用结束时间",
+          "type": "string"
+        },
+        {
+          "name": "SYZC",
+          "title": "使用周次",
+          "type": "string"
+        },
+        {
+          "name": "SYJC",
+          "title": "使用节次",
+          "type": "string"
+        },
+        {
+          "name": "SYYY",
+          "title": "使用原因",
+          "type": "string"
+        },
+        {
+          "name": "TSTAMP",
+          "title": "时间戳",
+          "type": "string"
+        }
+      ],
+      "request_body_declared": false,
+      "request_parameters_declared": false
+    },
+    {
+      "summary": "本专科生教室基本信息",
+      "path": "/open_api/customization/tgxjxbzksjsjbxx/full",
+      "method": "post",
+      "scopes": [
+        "dataMarket:v1:tgxjxbzksjsjbxx"
+      ],
+      "parameter_section": "",
+      "request_body_section": "",
+      "schema_refs": [],
+      "response_row_fields": [
+        {
+          "name": "WYBS",
+          "title": "非业务主键",
+          "type": "string"
+        },
+        {
+          "name": "JSBM",
+          "title": "教室编码",
+          "type": "string"
+        },
+        {
+          "name": "JSMC",
+          "title": "教室名称",
+          "type": "string"
+        },
+        {
+          "name": "XQBM",
+          "title": "校区编码",
+          "type": "string"
+        },
+        {
+          "name": "XQMC",
+          "title": "校区名称",
+          "type": "string"
+        },
+        {
+          "name": "GLBMBM",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "GLBMMC",
+          "title": "管理部门名称",
+          "type": "string"
+        },
+        {
+          "name": "JXLBM",
+          "title": "教学楼编码",
+          "type": "string"
+        },
+        {
+          "name": "JXLMC",
+          "title": "教学楼名称",
+          "type": "string"
+        },
+        {
+          "name": "SZLC",
+          "title": "所在楼层",
+          "type": "string"
+        },
+        {
+          "name": "ZWS",
+          "title": "座位数",
+          "type": "string"
+        },
+        {
+          "name": "JSLXM",
+          "title": "教室类型码",
+          "type": "string"
+        },
+        {
+          "name": "JSLXMDMMC",
+          "title": "代码名称",
+          "type": "string"
+        },
+        {
+          "name": "JSMS",
+          "title": "教室描述",
+          "type": "string"
+        },
+        {
+          "name": "PKRL",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "SJRL",
+          "title": "实际容量",
+          "type": "string"
+        },
+        {
+          "name": "JSJYRL",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "SFSYS",
+          "title": "是否实验室",
+          "type": "string"
+        },
+        {
+          "name": "SFXNJS",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "SFYX",
+          "title": "暂无描述信息",
+          "type": "string"
+        },
+        {
+          "name": "BZ",
+          "title": "备注",
+          "type": "string"
+        },
+        {
+          "name": "TSTAMP",
+          "title": "时间戳",
+          "type": "string"
+        }
+      ],
+      "request_body_declared": false,
+      "request_parameters_declared": false
+    }
+  ],
+  "selected_scope_operation_bindings_in_data_market_spec": {
+    "dataMarket:v1:view_echo_papa": [
+      {
+        "path": "/open_api/customization/view_echo_papa/full",
+        "summary": "研究生课表信息",
+        "method": "post"
+      }
+    ],
+    "dataMarket:v1:view_delta_yankee": [
+      {
+        "path": "/open_api/customization/view_delta_yankee/full",
+        "summary": "研究生排课信息",
+        "method": "post"
+      }
+    ],
+    "dataMarket:v1:view_delta_whisky": [
+      {
+        "path": "/open_api/customization/view_delta_whisky/full",
+        "summary": "研究生教室基本信息",
+        "method": "post"
+      }
+    ],
+    "dataMarket:v1:tgxjxbzkspkxx_alpha": [
+      {
+        "path": "/open_api/customization/tgxjxbzkspkxx_alpha/full",
+        "summary": "本专科生排课信息",
+        "method": "post"
+      }
+    ],
+    "dataMarket:v1:view_papa": [
+      {
+        "path": "/open_api/customization/view_papa/full",
+        "summary": "本专科生课程信息",
+        "method": "post"
+      }
+    ],
+    "dataMarket:v1:view_lima": [
+      {
+        "path": "/open_api/customization/view_lima/full",
+        "summary": "本专科生课表信息",
+        "method": "post"
+      }
+    ],
+    "dataMarket:v1:tgxjxbzksjssyxx": [
+      {
+        "path": "/open_api/customization/tgxjxbzksjssyxx/full",
+        "summary": "本专科生教室使用信息",
+        "method": "post"
+      }
+    ],
+    "dataMarket:v1:tgxjxbzksjsjbxx": [
+      {
+        "path": "/open_api/customization/tgxjxbzksjsjbxx/full",
+        "summary": "本专科生教室基本信息",
+        "method": "post"
+      }
+    ]
+  },
+  "data_market_document_path_count": 320,
+  "catalog_services": [
+    {
+      "id": "admincenter",
+      "name": "管理中心"
+    },
+    {
+      "id": "aiface",
+      "name": "人脸认证服务平台"
+    },
+    {
+      "id": "appPush",
+      "name": "App推送服务"
+    },
+    {
+      "id": "authz",
+      "name": "授权服务"
+    },
+    {
+      "id": "communicate",
+      "name": "通信服务"
+    },
+    {
+      "id": "dataMarket",
+      "name": "数据集市"
+    },
+    {
+      "id": "date",
+      "name": "数据中心"
+    },
+    {
+      "id": "formflow",
+      "name": "流程表单平台"
+    },
+    {
+      "id": "idToken",
+      "name": "IdToken服务"
+    },
+    {
+      "id": "messagecenter",
+      "name": "消息服务"
+    },
+    {
+      "id": "portalservice",
+      "name": "门户服务"
+    },
+    {
+      "id": "signature",
+      "name": "电子签章"
+    },
+    {
+      "id": "testdate",
+      "name": "测试服务"
+    },
+    {
+      "id": "thingslink",
+      "name": "物联网服务平台"
+    },
+    {
+      "id": "ttc",
+      "name": "新事务中心"
+    },
+    {
+      "id": "user",
+      "name": "用户服务"
+    },
+    {
+      "id": "userFederation",
+      "name": "用户服务（联合登录账号）"
+    },
+    {
+      "id": "userSecurity",
+      "name": "用户服务（安全）"
+    },
+    {
+      "id": "userThirdparty",
+      "name": "用户服务（第三方应用）"
+    },
+    {
+      "id": "userTransout",
+      "name": "用户服务（数据同步）"
+    },
+    {
+      "id": "wfwkf",
+      "name": "图书服务"
+    },
+    {
+      "id": "yikatong",
+      "name": "一卡通"
+    }
+  ],
+  "primary_text_evidence": [
+    {
+      "url": "https://open.s.zzu.edu.cn/docs/newguide/3.technology.md",
+      "sha256": "3c697abf03e29865d03f8dc1b4485d5d8dc980afeed6cd3f4c4b4e32a755373f",
+      "literal": "通过Scope",
+      "zero_based_character_offset": 371
+    },
+    {
+      "url": "https://open.s.zzu.edu.cn/docs/newguide/3.technology.md",
+      "sha256": "3c697abf03e29865d03f8dc1b4485d5d8dc980afeed6cd3f4c4b4e32a755373f",
+      "literal": "无法单独申请其中的API",
+      "zero_based_character_offset": 451
+    },
+    {
+      "url": "https://open.s.zzu.edu.cn/docs/newguide/6.openAPI.md",
+      "sha256": "09e42f780539de16c6ab32ee79e017cd5744c5ffed3d945061f3fbac8abf20eb",
+      "literal": "ClientSecret",
+      "zero_based_character_offset": 51
+    },
+    {
+      "url": "https://open.s.zzu.edu.cn/docs/newguide/6.openAPI.md",
+      "sha256": "09e42f780539de16c6ab32ee79e017cd5744c5ffed3d945061f3fbac8abf20eb",
+      "literal": "申请Scope",
+      "zero_based_character_offset": 238
+    },
+    {
+      "url": "https://open.s.zzu.edu.cn/docs/newguide/6.openAPI.md",
+      "sha256": "09e42f780539de16c6ab32ee79e017cd5744c5ffed3d945061f3fbac8abf20eb",
+      "literal": "申请字段",
+      "zero_based_character_offset": 969
+    },
+    {
+      "url": "https://open.s.zzu.edu.cn/docs/newguide/6.openAPI.md",
+      "sha256": "09e42f780539de16c6ab32ee79e017cd5744c5ffed3d945061f3fbac8abf20eb",
+      "literal": "Scope审批通过",
+      "zero_based_character_offset": 1103
+    },
+    {
+      "url": "https://poa.s.zzu.edu.cn/_docs/idToken/v1/latest/idToken-v1-2025_03_25_13_28_26.yaml",
+      "sha256": "bee300191d637967f07aafeee7ced194d1ef3dbea825bd881278aee9d86e9e5a",
+      "literal": "idToken:v1:createIdToken",
+      "zero_based_character_offset": 463
+    },
+    {
+      "url": "https://poa.s.zzu.edu.cn/_docs/idToken/v1/latest/idToken-v1-2025_03_25_13_28_26.yaml",
+      "sha256": "bee300191d637967f07aafeee7ced194d1ef3dbea825bd881278aee9d86e9e5a",
+      "literal": "clientCredentials:",
+      "zero_based_character_offset": 1033
+    },
+    {
+      "url": "https://poa.s.zzu.edu.cn/_docs/authz/v1/latest/authz-v1-2025_03_08_01_27_38.yaml",
+      "sha256": "98cc63b2b98def084439b8c951ff5c4a4a29645d4c086b6b72ab3186e87998cc",
+      "literal": "authz:v1:readRole",
+      "zero_based_character_offset": 517
+    },
+    {
+      "url": "https://poa.s.zzu.edu.cn/_docs/authz/v1/latest/authz-v1-2025_03_08_01_27_38.yaml",
+      "sha256": "98cc63b2b98def084439b8c951ff5c4a4a29645d4c086b6b72ab3186e87998cc",
+      "literal": "clientCredentials:",
+      "zero_based_character_offset": 7570
+    },
+    {
+      "url": "https://poa.s.zzu.edu.cn/_docs/date/v3/latest/date-v3-2023_05_17_17_02_37.yaml",
+      "sha256": "4cfa72d2825a7a523009b8daa49d7cb2860c2819559e74c1f808fe99acff6795",
+      "literal": "date:v3:TCJF",
+      "zero_based_character_offset": 408
+    }
+  ],
+  "application_form": {
+    "official_url": "https://www5.zzu.edu.cn/net/zhengzhoudaxuekaifangpingtaishiyongshenpibiao.pdf",
+    "sha256": "7265738873a04b439d8a2f55f06cbedb44502d446c80ff31fd08d4daa53874cf",
+    "pages": 1,
+    "text_extracted": true,
+    "page_rendered_and_visually_reviewed": true,
+    "requires_unit_approval_fields": true,
+    "mentions_school_data_center_ip": true,
+    "mentions_school_second_level_domain": true,
+    "completed_or_submitted": false
+  },
+  "excluded_scopes": [
+    "idToken:v1:createIdToken",
+    "authz:v1:readRole",
+    "date:v3:TCJF"
+  ],
+  "non_findings": {
+    "public_config_jwt_secret_is_empty": true,
+    "configuration_placeholders_not_treated_as_valid_credentials": true
+  },
+  "version_note": "Data center v1 HTML was read before checking catalog preference; v1 schema not fetched. v3 page and schema used for assessment.",
+  "captcha_note": "Integration DOCX download returned a CAPTCHA HTML page; no document retrieved and no CAPTCHA endpoint requested.",
+  "redirect_note": "/_docs returned an HTTP Location; it was not followed. Reviewed HTTPS canonical /_docs/ was fetched separately.",
+  "remaining_conditions": [
+    "School approval and provision of the selected exact academic scopes",
+    "Data-subject/row restriction and least-field contract",
+    "Independent identity flow without exposing broadly reusable school credentials",
+    "Approved backend hosting and secret handling",
+    "Permitted runtime rejection/revocation/compatibility verification"
+  ],
+  "funds_isolation_proved": false
+}
