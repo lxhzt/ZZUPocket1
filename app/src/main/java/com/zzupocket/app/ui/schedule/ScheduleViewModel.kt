@@ -9,6 +9,7 @@ import com.zzupocket.app.core.ScheduleText
 import com.zzupocket.app.core.WeekMath
 import com.zzupocket.app.core.toUserMessage
 import com.zzupocket.app.data.auth.AuthRepository
+import com.zzupocket.app.data.gms.GmsProfileSnapshot
 import com.zzupocket.app.data.gms.GmsScheduleMapper
 import com.zzupocket.app.data.gms.GmsScheduleSource
 import com.zzupocket.app.data.gms.GmsWeekAlign
@@ -25,6 +26,7 @@ import com.zzupocket.app.domain.WeekAlignment
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
@@ -50,6 +52,7 @@ data class ScheduleUiState(
      * 研究生整学期课表：已映射成本科的 [Session]/[Course]，直接复用同一套周网格。
      * 为空时课表页退回原来的登录/空态区块。
      */
+    val gmsProfileId: Int? = null,
     val gmsSemester: Semester? = null,
     val gmsSessions: List<Session> = emptyList(),
     val gmsCourses: List<Course> = emptyList(),
@@ -142,11 +145,39 @@ data class ScheduleUiState(
     fun gmsSessionsOf(week: Int): List<Session> = gmsSessions.filter { it.weekIndex == week }
 }
 
+/** Forget only the old rendered import; all database partitions remain intact. */
+internal fun ScheduleUiState.forGmsProfile(semesterId: Int?): ScheduleUiState {
+    val showingGrad = gradMode || semesterId != null
+    return copy(
+        gmsProfileId = semesterId,
+        gradMode = showingGrad,
+        gmsLessons = emptyList(), gmsSemester = null, gmsSessions = emptyList(), gmsCourses = emptyList(),
+        gmsTermValue = null, gmsAnchored = false, gmsWeekIndex = 1, gmsWeekResolvedOn = null,
+        gmsBusy = false, gmsError = null,
+        detailCourse = detailCourse?.takeIf { it.semesterId >= 0 },
+        weekStart = if (showingGrad) null else weekStart,
+        weekStartDay = if (showingGrad) com.zzupocket.app.core.WeekStartDay.MONDAY else weekStartDay,
+        weekTotal = if (showingGrad) null else weekTotal,
+        weekConfirmed = if (showingGrad) false else weekConfirmed,
+        weekSource = if (showingGrad) com.zzupocket.app.core.WeekSource.INFERRED else weekSource,
+        dataFetchedAt = if (showingGrad) null else dataFetchedAt,
+        refreshing = if (showingGrad) false else refreshing,
+        cacheNotice = if (showingGrad) null else cacheNotice,
+        cacheNoticeNeedsLogin = if (showingGrad) false else cacheNoticeNeedsLogin,
+        notice = if (showingGrad) null else notice,
+    )
+}
+
 class ScheduleViewModel : ViewModel() {
 
     private val auth: AuthRepository = AppGraph.authRepository
     private val repo: ScheduleRepository = AppGraph.scheduleRepository
     private val uiPrefs: UiPrefsStore = AppGraph.uiPrefsStore
+    private val gmsSource = AppGraph.gmsScheduleSource
+    private var gmsUiProfile: GmsProfileSnapshot? = null
+    private var gmsJob: kotlinx.coroutines.Job? = null
+    private val GMS_TIMEOUT_MS = 30_000L
+    private val GRAD_TTL_MS = 24L * 60 * 60 * 1000
 
     private val _state = MutableStateFlow(ScheduleUiState())
     val state: StateFlow<ScheduleUiState> = _state.asStateFlow()
@@ -156,12 +187,26 @@ class ScheduleViewModel : ViewModel() {
         viewModelScope.launch { runCatching { uiPrefs.migrateLegacyWeekAnchor() } }
         viewModelScope.launch { bootstrap() }
         viewModelScope.launch { observeEnrollmentYear() }
+        viewModelScope.launch {
+            gmsSource.profileChanges.collect { profile -> applyGmsProfile(profile) }
+        }
         // 学籍判定：本科教务认不认这个账号。判为"非本科"就切到研究生视图。
         viewModelScope.launch {
             if (detectGradMode() && com.zzupocket.app.core.AppGraph.gmsScheduleSource.hasSession()) {
                 loadGmsWeek()
             }
         }
+    }
+
+    private fun applyGmsProfile(profile: GmsProfileSnapshot?) {
+        if (gmsUiProfile === profile && _state.value.gmsProfileId == profile?.semesterId) return
+        gmsJob?.cancel()
+        gmsJob = null
+        val accepted = gmsSource.withCurrentProfile(profile) {
+            gmsUiProfile = profile
+            _state.update { it.forGmsProfile(profile?.semesterId) }
+        }
+        if (accepted && profile != null) loadGmsWeek()
     }
 
     // ── 研究生课表（gmsstu / 研究生院那套系统）──────────────────────────
@@ -191,13 +236,11 @@ class ScheduleViewModel : ViewModel() {
         val gradByEvidence = if (track == com.zzupocket.app.domain.AcademicTrack.NOT_UNDERGRAD) {
             true
         } else if (track == null || track == com.zzupocket.app.domain.AcademicTrack.UNKNOWN) {
-            val hasSession = runCatching { AppGraph.gmsScheduleSource.hasSession() }.getOrDefault(false)
-            val hasCache = runCatching {
-                repo.cachedSessionCount(
-                    com.zzupocket.app.data.gms.GmsScheduleSource.SOURCE,
-                    com.zzupocket.app.data.gms.GmsScheduleMapper.GRAD_SEMESTER_ID,
-                ) > 0
-            }.getOrDefault(false)
+            val profile = gmsSource.profileSnapshot()
+            val hasSession = profile != null && gmsSource.hasSession()
+            val hasCache = if (profile == null) false else runCatching {
+                repo.cachedSessionCount(GmsScheduleSource.SOURCE, profile.semesterId) > 0
+            }.getOrDefault(false) && profile.isCurrent()
             hasSession || hasCache
         } else {
             false
@@ -230,7 +273,8 @@ class ScheduleViewModel : ViewModel() {
     /**
      * WebView 登录结束后调用：从 WebView 的 CookieManager 取回会话并采用，然后拉本周课表。
      *
-     * 密码全程输在**学校自己的页面**上，我们只取它落下的会话 Cookie（不接触、不保存密码）。
+     * 密码输入在学校页面中，原生代码只采用教务会话 Cookie、不读取密码输入；
+     * 学校页面仍运行在本 App 的 WebView 内。
      */
     fun adoptGmsSession() {
         // Capture before closing the dialog: disposal clears the browser's CAS/GMS cookies.
@@ -247,26 +291,9 @@ class ScheduleViewModel : ViewModel() {
                 }
                 return@launch
             }
-            // force：刚拿到的会话一定是新的，别被上一次还在跑的加载挡住
-            loadGmsWeek(force = true)
+            // profileChanges revokes the old UI/task and starts this new partition's load.
         }
     }
-
-    /**
-     * 正在跑的研究生课表加载。
-     *
-     * ⚠️ 这里用 Job 而不是 `gmsBusy` 当并发闸门：0.31.4 曾经是
-     * 「adoptGmsSession 先置 gmsBusy=true，再调 loadGmsWeek，而 loadGmsWeek 第一行
-     * `if (gmsBusy) return`」——第一次走到就被自己挡住，gmsBusy 永远停在 true，
-     * 界面无限转圈且不给任何错误（issue #2 报告者复现）。用 Job 判断就不会自锁。
-     */
-    private var gmsJob: kotlinx.coroutines.Job? = null
-
-    /** 研究生课表三次请求的总预算；超了就给一句人话，别让界面无限转圈 */
-    private val GMS_TIMEOUT_MS = 30_000L
-
-    /** 研究生课表缓存有效期：24 小时（课表变动很小，一天最多后台刷一次） */
-    private val GRAD_TTL_MS = 24L * 60 * 60 * 1000
 
     /** `14:20` 这种口径的"获取时间" */
     private fun hhmm(millis: Long): String =
@@ -284,45 +311,47 @@ class ScheduleViewModel : ViewModel() {
      * 缓存里只有"课表本身"，学期信息（第 1 周起始日等）来自周次设置，两者拼起来就能
      * 立刻画出网格。之后是否联网由调用方按 TTL 判断。
      */
-    private suspend fun publishGmsFromCache(sessions: List<Session>, fetchedAt: Long?) {
+    private suspend fun publishGmsFromCache(profile: GmsProfileSnapshot, sessions: List<Session>, fetchedAt: Long?) {
         val today = LocalDate.now()
-        val settings = runCatching { uiPrefs.weekSettings(GmsScheduleMapper.GRAD_SEMESTER_ID) }
+        val settings = runCatching { uiPrefs.weekSettings(profile.semesterId) }
             .getOrDefault(com.zzupocket.app.core.WeekSettings())
         val weeks = sessions.map { it.weekIndex }.distinct().sorted()
-        val courses = runCatching { repo.courses(GmsScheduleMapper.GRAD_SEMESTER_ID) }
+        val courses = runCatching { repo.courses(profile.semesterId) }
             .getOrDefault(emptyList())
         val periods = _state.value.periods.ifEmpty { GmsScheduleMapper.defaultPeriods() }
         val start = settings.weekOneStart
         val week = start?.let { WeekMath.weekIndexAt(it, today) }
             ?.coerceIn(weeks.firstOrNull() ?: 1, weeks.lastOrNull() ?: Int.MAX_VALUE)
             ?: (weeks.firstOrNull() ?: 1)
-        _state.update {
-            it.copy(
-                gmsBusy = false,
-                gmsError = null,
-                gmsSessions = sessions,
-                gmsCourses = courses,
-                gmsPeriods = periods,
-                periods = periods,
-                gmsWeekIndex = week,
-                gmsSemester = Semester(
-                    id = GmsScheduleMapper.GRAD_SEMESTER_ID,
-                    nameZh = "研究生课表",
-                    schoolYear = "",
-                    startDate = start,
-                    endDate = null,
-                    weekStartOnSunday = settings.startDay == com.zzupocket.app.core.WeekStartDay.SUNDAY,
-                    weekIndices = weeks,
-                    isCurrent = true,
-                ),
-                weekStart = start,
-                weekStartDay = settings.startDay,
-                weekTotal = settings.totalWeeks ?: weeks.lastOrNull(),
-                weekConfirmed = settings.confirmed,
-                weekSource = settings.source,
-                gmsAnchored = settings.confirmed,
-                dataFetchedAt = fetchedAt,
-            )
+        gmsSource.withCurrentProfile(profile) {
+            _state.update {
+                it.copy(
+                    gmsBusy = false,
+                    gmsError = null,
+                    gmsSessions = sessions,
+                    gmsCourses = courses,
+                    gmsPeriods = periods,
+                    periods = periods,
+                    gmsWeekIndex = week,
+                    gmsSemester = Semester(
+                        id = profile.semesterId,
+                        nameZh = "研究生课表",
+                        schoolYear = "",
+                        startDate = start,
+                        endDate = null,
+                        weekStartOnSunday = settings.startDay == com.zzupocket.app.core.WeekStartDay.SUNDAY,
+                        weekIndices = weeks,
+                        isCurrent = true,
+                    ),
+                    weekStart = start,
+                    weekStartDay = settings.startDay,
+                    weekTotal = settings.totalWeeks ?: weeks.lastOrNull(),
+                    weekConfirmed = settings.confirmed,
+                    weekSource = settings.source,
+                    gmsAnchored = settings.confirmed,
+                    dataFetchedAt = fetchedAt,
+                )
+            }
         }
     }
 
@@ -335,18 +364,27 @@ class ScheduleViewModel : ViewModel() {
      * @param force true = 取消在跑的那次重新拉（刷新按钮、登录完成后都该用它）
      */
     fun loadGmsWeek(force: Boolean = false) {
-        if (!force && gmsJob?.isActive == true) return
+        val profile = gmsSource.profileSnapshot() ?: run {
+            gmsJob?.cancel()
+            _state.update { it.forGmsProfile(null).copy(gmsError = "请先登录研究生系统") }
+            return
+        }
+        if (!force && gmsJob?.isActive == true && _state.value.gmsProfileId == profile.semesterId) return
         gmsJob?.cancel()
+        gmsSource.withCurrentProfile(profile) {
+            if (_state.value.gmsProfileId != profile.semesterId) _state.update { it.forGmsProfile(profile.semesterId) }
+        }
         gmsJob = viewModelScope.launch {
             // ① 有缓存就先渲染（秒开、断网也能看），再决定要不要联网
             val cached = runCatching {
-                repo.cachedSessions(GmsScheduleSource.SOURCE, GmsScheduleMapper.GRAD_SEMESTER_ID)
+                repo.cachedSessions(GmsScheduleSource.SOURCE, profile.semesterId)
             }.getOrDefault(emptyList())
             val fetchedAt = runCatching {
-                repo.lastFetchedAt(GmsScheduleSource.SOURCE, GmsScheduleMapper.GRAD_SEMESTER_ID)
+                repo.lastFetchedAt(GmsScheduleSource.SOURCE, profile.semesterId)
             }.getOrNull()
+            if (!profile.isCurrent()) return@launch
             if (cached.isNotEmpty()) {
-                publishGmsFromCache(cached, fetchedAt)
+                publishGmsFromCache(profile, cached, fetchedAt)
                 val fresh = !com.zzupocket.app.core.SyncPolicy.shouldRefresh(
                     now = System.currentTimeMillis(),
                     lastFetchedAt = fetchedAt,
@@ -354,39 +392,45 @@ class ScheduleViewModel : ViewModel() {
                 )
                 if (fresh && !force) return@launch
             }
-            _state.update { it.copy(gmsBusy = cached.isEmpty(), gmsError = null, refreshing = true) }
+            if (!gmsSource.withCurrentProfile(profile) {
+                    _state.update { it.copy(gmsBusy = cached.isEmpty(), gmsError = null, refreshing = true) }
+                }) return@launch
             val result = runCatching {
                 // 兜底超时：网络卡住时给一句人话，而不是让界面永远转圈
                 kotlinx.coroutines.withTimeout(GMS_TIMEOUT_MS) {
                     kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                         val source = AppGraph.gmsScheduleSource
                         val terms = source.terms()
+                        if (!profile.isCurrent()) throw AppError.ReLoginRequired()
                         val term = terms.firstOrNull { it.selected } ?: terms.firstOrNull()
                             ?: throw AppError.Parse("研究生系统没有返回学期")
                         val entries = source.weekEntries(term.value)
+                        if (!profile.isCurrent()) throw AppError.ReLoginRequired()
                         val current = runCatching { source.currentWeek() }.getOrDefault(emptyList())
                         Triple(term, entries, current)
                     }
                 }
             }
             result.onSuccess { (term, entries, current) ->
+                if (!profile.isCurrent()) return@onSuccess
                 if (entries.isEmpty()) {
-                    _state.update {
-                        it.copy(gmsBusy = false, gmsError = "研究生系统没有返回本学期课表数据")
+                    gmsSource.withCurrentProfile(profile) {
+                        _state.update { it.copy(gmsBusy = false, gmsError = "研究生系统没有返回本学期课表数据") }
                     }
                     return@onSuccess
                 }
                 val today = LocalDate.now()
                 val guess = GmsWeekAlign.guess(entries, current)
                 val periods = _state.value.periods.ifEmpty { GmsScheduleMapper.defaultPeriods() }
-                val sessions = GmsScheduleMapper.toSessions(entries, periods)
+                val sessions = GmsScheduleMapper.toSessions(entries, periods, semesterId = profile.semesterId)
                 val courses = GmsScheduleMapper.toCourses(sessions)
                 val dataWeeks = entries.map { it.weekIndex }.distinct().sorted()
 
                 // 周次参数：已设置就用；没有就把"唯一解"的推断结果填进去（标记待确认，绝不当成事实）
                 var settings = runCatching {
-                    uiPrefs.weekSettings(GmsScheduleMapper.GRAD_SEMESTER_ID)
+                    uiPrefs.weekSettings(profile.semesterId)
                 }.getOrDefault(com.zzupocket.app.core.WeekSettings())
+                if (!profile.isCurrent()) return@onSuccess
                 if (settings.weekOneStart == null) {
                     guess.anchoredWeekOrNull()?.let { inferred ->
                         settings = settings.copy(
@@ -396,7 +440,7 @@ class ScheduleViewModel : ViewModel() {
                             source = com.zzupocket.app.core.WeekSource.INFERRED,
                         )
                         runCatching {
-                            uiPrefs.saveWeekSettings(GmsScheduleMapper.GRAD_SEMESTER_ID, settings)
+                            uiPrefs.saveWeekSettings(profile.semesterId, settings)
                         }
                     }
                 }
@@ -407,6 +451,7 @@ class ScheduleViewModel : ViewModel() {
                     today = today,
                     anchoredMonday = settings.weekOneStart,
                     anchoredWeek = null,
+                    semesterId = profile.semesterId,
                 )
                 val week = if (settings.weekOneStart != null) {
                     WeekMath.weekIndexAt(settings.weekOneStart, today)
@@ -416,48 +461,53 @@ class ScheduleViewModel : ViewModel() {
                     semester.weekIndices.firstOrNull() ?: 1,
                     semester.weekIndices.lastOrNull() ?: Int.MAX_VALUE,
                 )
-                _state.update {
-                    it.copy(
-                        gmsBusy = false,
-                        gmsError = null,
-                        gmsTermValue = term.value,
-                        gmsLessons = current,
-                        gmsSemester = semester,
-                        gmsSessions = sessions,
-                        gmsCourses = courses,
-                        gmsWeekIndex = week,
-                        gmsPeriods = periods,
-                        gmsWeekResolvedOn = today,
-                        gmsAnchored = settings.confirmed,
-                        periods = periods,
-                        weekStart = settings.weekOneStart,
-                        weekStartDay = settings.startDay,
-                        weekTotal = settings.totalWeeks ?: dataWeeks.maxOrNull(),
-                        weekConfirmed = settings.confirmed,
-                        weekSource = settings.source,
-                        // 刷新成功：更新"获取时间"，清掉缓存提示；内容是否变化由指纹判断，
-                        // 但界面本来就不显示提示，所以这里不需要分支
-                        dataFetchedAt = System.currentTimeMillis(),
-                        refreshing = false,
-                        cacheNotice = null,
-                        cacheNoticeNeedsLogin = false,
-                        notice = if (settings.weekOneStart == null) {
-                            "还没定教学周基准，先按第 $week 周显示；去「课程表设置」设一下开学日期"
-                        } else if (!settings.confirmed) {
-                            "周次基准是自动推断的，可能不准；去「课程表设置」确认一下"
-                        } else null,
-                    )
+                if (!profile.isCurrent()) return@onSuccess
+                gmsSource.withCurrentProfile(profile) {
+                    _state.update {
+                        it.copy(
+                            gmsBusy = false,
+                            gmsError = null,
+                            gmsTermValue = term.value,
+                            gmsLessons = current,
+                            gmsSemester = semester,
+                            gmsSessions = sessions,
+                            gmsCourses = courses,
+                            gmsWeekIndex = week,
+                            gmsPeriods = periods,
+                            gmsWeekResolvedOn = today,
+                            gmsAnchored = settings.confirmed,
+                            periods = periods,
+                            weekStart = settings.weekOneStart,
+                            weekStartDay = settings.startDay,
+                            weekTotal = settings.totalWeeks ?: dataWeeks.maxOrNull(),
+                            weekConfirmed = settings.confirmed,
+                            weekSource = settings.source,
+                            // 刷新成功：更新"获取时间"，清掉缓存提示；内容是否变化由指纹判断，
+                            // 但界面本来就不显示提示，所以这里不需要分支
+                            dataFetchedAt = System.currentTimeMillis(),
+                            refreshing = false,
+                            cacheNotice = null,
+                            cacheNoticeNeedsLogin = false,
+                            notice = if (settings.weekOneStart == null) {
+                                "还没定教学周基准，先按第 $week 周显示；去「课程表设置」设一下开学日期"
+                            } else if (!settings.confirmed) {
+                                "周次基准是自动推断的，可能不准；去「课程表设置」确认一下"
+                            } else null,
+                        )
+                    }
                 }
                 // 顺手落库（0.31.8 只写不读：读路径等周次验证通过后再接，所以对界面零影响）
                 runCatching {
+                    if (!profile.isCurrent()) return@runCatching
                     repo.saveTimetable(
                         source = com.zzupocket.app.data.gms.GmsScheduleSource.SOURCE,
-                        semesterId = GmsScheduleMapper.GRAD_SEMESTER_ID,
+                        semesterId = profile.semesterId,
                         sessions = sessions,
                         courses = courses,
                     )
                 }
             }.onFailure { e ->
+                if (!profile.isCurrent()) return@onFailure
                 // 被新一次刷新取消：静默，不要报错（新任务已经在跑）
                 if (e is kotlinx.coroutines.CancellationException &&
                     e !is kotlinx.coroutines.TimeoutCancellationException
@@ -471,33 +521,35 @@ class ScheduleViewModel : ViewModel() {
                 }
                 // 有缓存就不报红错：改成一行小灰字，说明"这是什么时候的数据"。
                 // 红色错误会让人以为账号出问题（历史 issue #2 反复重登就是这么来的）。
-                if (_state.value.gmsSessions.isNotEmpty()) {
-                    val expired = msg.contains("登录")
-                    val at = _state.value.dataFetchedAt?.let { hhmm(it) }
-                    _state.update {
-                        it.copy(
-                            gmsBusy = false,
-                            refreshing = false,
-                            gmsError = null,
-cacheNoticeNeedsLogin = expired,
-                            cacheNotice = when {
-                                at == null && expired -> "研究生登录已过期 · 重新登录"
-                                at == null -> "暂时连不上研究生系统 · 点此重试"
-                                expired -> "研究生登录已过期，以下是 $at 的课表 · 重新登录"
-                                else -> "显示的是 $at 的课表 · 点此重试"
-                            },
-                        )
-                    }
-                } else {
-                    _state.update {
-                        it.copy(gmsBusy = false, refreshing = false, gmsError = msg)
+                gmsSource.withCurrentProfile(profile) {
+                    if (_state.value.gmsSessions.isNotEmpty()) {
+                        val expired = msg.contains("登录")
+                        val at = _state.value.dataFetchedAt?.let { hhmm(it) }
+                        _state.update {
+                            it.copy(
+                                gmsBusy = false,
+                                refreshing = false,
+                                gmsError = null,
+                                cacheNoticeNeedsLogin = expired,
+                                cacheNotice = when {
+                                    at == null && expired -> "研究生登录已过期 · 重新登录"
+                                    at == null -> "暂时连不上研究生系统 · 点此重试"
+                                    expired -> "研究生登录已过期，以下是 $at 的课表 · 重新登录"
+                                    else -> "显示的是 $at 的课表 · 点此重试"
+                                },
+                            )
+                        }
+                    } else {
+                        _state.update {
+                            it.copy(gmsBusy = false, refreshing = false, gmsError = msg)
+                        }
                     }
                 }
                 // 记一次失败原因：将来要能说清是会话过期还是教务不可用
                 runCatching {
                     repo.markSyncError(
                         com.zzupocket.app.data.gms.GmsScheduleSource.SOURCE,
-                        GmsScheduleMapper.GRAD_SEMESTER_ID,
+                        profile.semesterId,
                         msg,
                     )
                 }
@@ -506,6 +558,7 @@ cacheNoticeNeedsLogin = expired,
     }
 
     fun onResume() {
+        applyGmsProfile(gmsSource.profileSnapshot())
         // 从「课程表设置」改完周次参数回来：先把新参数读进来（纯本地，不联网）
         viewModelScope.launch { reloadWeekSettings() }
         if (!_state.value.started) {
@@ -801,7 +854,9 @@ cacheNoticeNeedsLogin = expired,
         if (session.source == ScheduleRepository.SOURCE_CUSTOM) {
             openPlanEditor(_state.value.plans.firstOrNull { it.code == session.courseCode })
         } else {
-            val pool = if (session.semesterId == GmsScheduleMapper.GRAD_SEMESTER_ID) {
+            val pool = if (session.source == GmsScheduleSource.SOURCE) {
+                val profile = gmsSource.profileSnapshot() ?: return
+                if (session.semesterId != profile.semesterId || _state.value.gmsProfileId != profile.semesterId) return
                 _state.value.gmsCourses
             } else {
                 _state.value.courses
@@ -902,6 +957,7 @@ cacheNoticeNeedsLogin = expired,
 
     /** 重置为自动值：清掉本学期设置，下次进入按「教务校历 → 推断」重新填 */
     fun resetWeekSettings() {
+        val profile = if (_state.value.gradMode) gmsSource.profileSnapshot() ?: return else null
         val id = weekSemesterId() ?: return
         _state.update {
             it.copy(
@@ -914,6 +970,7 @@ cacheNoticeNeedsLogin = expired,
         }
         viewModelScope.launch {
             runCatching { uiPrefs.clearWeekSettings(id) }
+            if (profile?.isCurrent() == false) return@launch
             val s = _state.value
             if (s.gradMode) {
                 loadGmsWeek(force = true)
@@ -925,7 +982,7 @@ cacheNoticeNeedsLogin = expired,
 
     /** 当前正在看的学期在设置里的 id（研究生用合成 id） */
     private fun weekSemesterId(): Int? = if (_state.value.gradMode) {
-        GmsScheduleMapper.GRAD_SEMESTER_ID
+        gmsSource.profileSnapshot()?.semesterId?.takeIf { it == _state.value.gmsProfileId }
     } else {
         _state.value.selectedSemester?.id
     }
@@ -945,28 +1002,35 @@ cacheNoticeNeedsLogin = expired,
         today: LocalDate,
     ) {
         val s = _state.value
-        val bounded = week.coerceIn(1, settings.totalWeeks ?: maxOf(week, 1))
-        _state.update {
-            it.copy(
-                weekStart = settings.weekOneStart,
-                weekStartDay = settings.startDay,
-                weekTotal = settings.totalWeeks,
-                weekConfirmed = settings.confirmed,
-                weekSource = settings.source,
-                weekIndex = bounded,
-                gmsWeekIndex = bounded,
-                weekResolvedOn = today,
-                gmsWeekResolvedOn = today,
-                gmsAnchored = settings.confirmed,
-                gmsSemester = if (s.gradMode && settings.weekOneStart != null) {
-                    it.gmsSemester?.copy(startDate = settings.weekOneStart)
-                } else {
-                    it.gmsSemester
-                },
-                notice = null,
-            )
-        }
+        val profile = if (s.gradMode) gmsSource.profileSnapshot() ?: return else null
         val id = weekSemesterId() ?: return
+        if (profile != null && profile.semesterId != id) return
+        val bounded = week.coerceIn(1, settings.totalWeeks ?: maxOf(week, 1))
+        val publish = {
+            _state.update {
+                it.copy(
+                    weekStart = settings.weekOneStart,
+                    weekStartDay = settings.startDay,
+                    weekTotal = settings.totalWeeks,
+                    weekConfirmed = settings.confirmed,
+                    weekSource = settings.source,
+                    weekIndex = bounded,
+                    gmsWeekIndex = bounded,
+                    weekResolvedOn = today,
+                    gmsWeekResolvedOn = today,
+                    gmsAnchored = settings.confirmed,
+                    gmsSemester = if (s.gradMode && settings.weekOneStart != null) {
+                        it.gmsSemester?.copy(startDate = settings.weekOneStart)
+                    } else {
+                        it.gmsSemester
+                    },
+                    notice = null,
+                )
+            }
+        }
+        if (profile != null) {
+            if (!gmsSource.withCurrentProfile(profile, publish)) return
+        } else publish()
         viewModelScope.launch { runCatching { uiPrefs.saveWeekSettings(id, settings) } }
     }
 
@@ -977,28 +1041,33 @@ cacheNoticeNeedsLogin = expired,
      * 免得把本科的周次写到研究生视图上。
      */
     private suspend fun reloadWeekSettings() {
+        val profile = if (_state.value.gradMode) gmsSource.profileSnapshot() ?: return else null
         val id = weekSemesterId() ?: return
         val st = runCatching { uiPrefs.weekSettings(id) }.getOrNull() ?: return
         val start = st.weekOneStart ?: return
         val today = LocalDate.now()
         val week = WeekMath.weekIndexAt(start, today).coerceIn(1, st.totalWeeks ?: Int.MAX_VALUE)
-        val grad = _state.value.gradMode
-        _state.update {
-            it.copy(
-                weekStart = start,
-                weekStartDay = st.startDay,
-                weekTotal = st.totalWeeks,
-                weekConfirmed = st.confirmed,
-                weekSource = st.source,
-                weekIndex = if (grad) it.weekIndex else week,
-                gmsWeekIndex = if (grad) week else it.gmsWeekIndex,
-                weekResolvedOn = if (grad) it.weekResolvedOn else today,
-                gmsWeekResolvedOn = if (grad) today else it.gmsWeekResolvedOn,
-                gmsAnchored = st.confirmed,
-                gmsSemester = if (grad) it.gmsSemester?.copy(startDate = start) else it.gmsSemester,
-                notice = if (st.confirmed) null else "周次基准待确认：去「课程表设置」确认一下开学日期",
-            )
+        val grad = profile != null
+        if (profile == null && _state.value.gradMode) return
+        val publish = {
+            _state.update {
+                it.copy(
+                    weekStart = start,
+                    weekStartDay = st.startDay,
+                    weekTotal = st.totalWeeks,
+                    weekConfirmed = st.confirmed,
+                    weekSource = st.source,
+                    weekIndex = if (grad) it.weekIndex else week,
+                    gmsWeekIndex = if (grad) week else it.gmsWeekIndex,
+                    weekResolvedOn = if (grad) it.weekResolvedOn else today,
+                    gmsWeekResolvedOn = if (grad) today else it.gmsWeekResolvedOn,
+                    gmsAnchored = st.confirmed,
+                    gmsSemester = if (grad) it.gmsSemester?.copy(startDate = start) else it.gmsSemester,
+                    notice = if (st.confirmed) null else "周次基准待确认：去「课程表设置」确认一下开学日期",
+                )
+            }
         }
+        if (profile != null) gmsSource.withCurrentProfile(profile, publish) else publish()
     }
 
     fun refresh() {
@@ -1026,7 +1095,15 @@ cacheNoticeNeedsLogin = expired,
         }
     }
 
-    fun openDetail(course: Course) = _state.update { it.copy(detailCourse = course) }
+    fun openDetail(course: Course) {
+        if (course.semesterId < 0) {
+            val profile = gmsSource.profileSnapshot() ?: return
+            if (profile.semesterId != course.semesterId) return
+            gmsSource.withCurrentProfile(profile) { _state.update { it.copy(detailCourse = course) } }
+        } else {
+            _state.update { it.copy(detailCourse = course) }
+        }
+    }
     fun closeDetail() = _state.update { it.copy(detailCourse = null) }
 
     /** 课程总览用的排序（按课程名） */

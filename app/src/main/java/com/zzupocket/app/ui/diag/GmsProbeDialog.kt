@@ -41,8 +41,11 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
+import androidx.compose.ui.window.SecureFlagPolicy
 import com.zzupocket.app.BuildConfig
 import com.zzupocket.app.data.gms.GmsProbe
 
@@ -51,7 +54,8 @@ import com.zzupocket.app.data.gms.GmsProbe
  *
  * 为什么是 WebView 而不是原生登录：那个系统走学校统一身份认证的 CAS 跳转，
  * 让用户在**学校自己的页面**上输密码/短信码，我们只负责读它登录后自己发出的接口请求 ——
- * 密码不经过我们，令牌也不用我们保管。
+ * 原生代码不读取密码输入；学校页面仍运行在本 App 的 WebView 中，
+ * 应用采用登录后取得的研究生教务会话 Cookie。
  *
  * 记录原理见 [GmsProbe]：向页面注入脚本钩住 fetch / XHR，通过 console.log 回传。
  *
@@ -133,8 +137,14 @@ fun GmsProbeDialog(
 
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false),
+        properties = DialogProperties(usePlatformDefaultWidth = false, securePolicy = SecureFlagPolicy.SecureOn),
     ) {
+        // A Dialog owns a different Window from MainActivity, including while entering a password.
+        val dialogWindow = (LocalView.current.parent as? DialogWindowProvider)?.window
+        DisposableEffect(dialogWindow) {
+            dialogWindow?.setHideOverlayWindows(true)
+            onDispose { }
+        }
         Surface(modifier = Modifier.fillMaxSize()) {
             Column(modifier = Modifier.fillMaxSize()) {
                 // ── 顶部：标题 + 进度 + 按钮（按钮放顶部，键盘弹起也点得到）──────
@@ -216,8 +226,8 @@ fun GmsProbeDialog(
                     }
                     Text(
                         if (loginMode) {
-                            "用你的研究生账号登录 —— 密码在学校自己的页面上输，我们不接触、也不保存。" +
-                                "登录成功、回到研究生系统页面之后，点下面的「完成登录」就能拉课表。" +
+                            "请在学校登录页完成验证。应用保存同步课表所需的登录状态，不保存登录密码。重新登录后会重新同步课表。" +
+                                "登录成功、回到研究生系统页面之后，点上方的「完成登录」就能拉课表。" +
                                 "这页打不开或反复跳转时，点「重新登录」清掉旧会话再试。"
                         } else {
                             "用你自己的研究生账号登录（密码在学校自己的页面上输）。进去后翻到「课表/我的课程」，" +
@@ -232,7 +242,13 @@ fun GmsProbeDialog(
                 AndroidView(
                     modifier = Modifier.weight(1f).fillMaxWidth(),
                     factory = { ctx ->
-                        WebView(ctx).apply {
+                        object : WebView(ctx) {
+                            override fun onFilterTouchEventForSecurity(event: android.view.MotionEvent): Boolean {
+                                val obscured = android.view.MotionEvent.FLAG_WINDOW_IS_OBSCURED or
+                                    android.view.MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED
+                                return event.flags and obscured == 0 && super.onFilterTouchEventForSecurity(event)
+                            }
+                        }.apply {
                             WebView.setWebContentsDebuggingEnabled(false)
                             settings.javaScriptEnabled = true
                             settings.domStorageEnabled = true

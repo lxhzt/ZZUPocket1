@@ -144,10 +144,10 @@ class EasClient(
     // ── API ──────────────────────────────────────────────────────────────
 
     suspend fun fetchSemesters(userToken: String): List<SemesterDto> =
-        getData(ALL_SEMESTERS_URL, userToken, "学期列表")
+        getData<List<SemesterDto>>(ALL_SEMESTERS_URL, userToken, "学期列表").filter { it.id >= 0 }
 
     suspend fun fetchCurrentSemester(userToken: String): SemesterDto? =
-        getData(CURRENT_SEMESTER_URL, userToken, "当前学期")
+        getData<SemesterDto>(CURRENT_SEMESTER_URL, userToken, "当前学期").takeIf { it.id >= 0 }
 
     /** 节次时刻表（作息）。有了它，"第 3 节"才知道是几点几分。 */
     suspend fun fetchPeriods(userToken: String): List<PeriodDto> =

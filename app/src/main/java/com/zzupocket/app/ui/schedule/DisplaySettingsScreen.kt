@@ -1,4 +1,4 @@
-﻿package com.zzupocket.app.ui.schedule
+package com.zzupocket.app.ui.schedule
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -67,12 +67,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.zzupocket.app.core.AppGraph
 import com.zzupocket.app.core.Enrollment
 import com.zzupocket.app.core.WeekMath
+import com.zzupocket.app.core.security.runAcademicRead
 import com.zzupocket.app.data.prefs.BlockBorder
 import com.zzupocket.app.data.prefs.CourseColorMode
 import com.zzupocket.app.data.prefs.CourseTextMode
 import com.zzupocket.app.data.prefs.GridDensity
 import com.zzupocket.app.data.prefs.UiPrefs
 import com.zzupocket.app.data.prefs.UiPrefsStore
+import com.zzupocket.app.data.gms.GmsProfileSnapshot
+import kotlinx.coroutines.flow.collectLatest
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -87,6 +90,7 @@ import kotlinx.coroutines.launch
  */
 data class WeekUi(
     val semesterId: Int? = null,
+    internal val profile: GmsProfileSnapshot? = null,
     /** 是否研究生视图（研究生用合成学期 id） */
     val grad: Boolean = false,
     val weekStart: java.time.LocalDate? = null,
@@ -142,22 +146,46 @@ class DisplaySettingsViewModel : ViewModel() {
     val week: StateFlow<WeekUi> = _week
 
     init {
-        viewModelScope.launch { refreshWeek() }
-    }
-
-    /** 当前该编辑哪个学期：有本科学期就用它，否则当成研究生（合成学期 id） */
-    private suspend fun targetSemester(): Pair<Int, java.time.LocalDate?> {
-        val s = runCatching { scheduleRepo.currentSemester() }.getOrNull()
-        return if (s != null) {
-            s.id to s.startDate
-        } else {
-            com.zzupocket.app.data.gms.GmsScheduleMapper.GRAD_SEMESTER_ID to null
+        viewModelScope.launch {
+            AppGraph.gmsScheduleSource.profileChanges.collectLatest { profile ->
+                AppGraph.gmsScheduleSource.withCurrentProfile(profile) { _week.value = WeekUi() }
+                refreshWeekSafely(profile)
+            }
         }
     }
 
+    /** Each graduate browser login owns its own local schedule namespace. */
+    private suspend fun targetSemester(profile: GmsProfileSnapshot?): Pair<Int, java.time.LocalDate?>? {
+        if (profile != null) return profile.takeIf { it.isCurrent() }?.let { it.semesterId to null }
+        val semester = runCatching { scheduleRepo.currentSemester() }.getOrNull()?.takeIf { it.id >= 0 }
+        return semester?.let { it.id to it.startDate }
+    }
+
+    private fun editableWeek(): WeekUi? {
+        val value = _week.value
+        val id = value.semesterId ?: return null
+        if (id < 0 && value.profile?.semesterId != id) return null
+        var permitted = false
+        AppGraph.gmsScheduleSource.withCurrentProfile(value.profile) { permitted = true }
+        return value.takeIf { permitted }
+    }
+
     /** 读参数；若为空且教务给了学期起始日，就自动填一次（教务校历视为权威，直接 confirmed） */
-    suspend fun refreshWeek() {
-        val (id, calendarStart) = targetSemester()
+    suspend fun refreshWeek() = refreshWeekSafely(AppGraph.gmsScheduleSource.profileSnapshot())
+
+    private suspend fun refreshWeekSafely(profile: GmsProfileSnapshot?) = runAcademicRead(
+        onFailure = {
+            AppGraph.gmsScheduleSource.withCurrentProfile(profile) { _week.value = WeekUi() }
+        },
+    ) { refreshWeek(profile) }
+
+    private suspend fun refreshWeek(profile: GmsProfileSnapshot?) {
+        val target = targetSemester(profile)
+        if (target == null) {
+            AppGraph.gmsScheduleSource.withCurrentProfile(profile) { _week.value = WeekUi() }
+            return
+        }
+        val (id, calendarStart) = target
         var st = store.weekSettings(id)
         if (st.weekOneStart == null && calendarStart != null) {
             st = st.copy(
@@ -168,9 +196,10 @@ class DisplaySettingsViewModel : ViewModel() {
             runCatching { store.saveWeekSettings(id, st) }
         }
         val today = java.time.LocalDate.now()
-        _week.value = WeekUi(
+        val updated = WeekUi(
             semesterId = id,
-            grad = id == com.zzupocket.app.data.gms.GmsScheduleMapper.GRAD_SEMESTER_ID,
+            profile = profile,
+            grad = profile != null,
             weekStart = st.weekOneStart,
             startDay = st.startDay,
             total = st.totalWeeks,
@@ -178,10 +207,11 @@ class DisplaySettingsViewModel : ViewModel() {
             source = st.source,
             currentWeek = st.weekOneStart?.let { com.zzupocket.app.core.WeekMath.weekIndexAt(it, today) },
         )
+        AppGraph.gmsScheduleSource.withCurrentProfile(profile) { _week.value = updated }
     }
 
     fun setWeekStart(date: java.time.LocalDate) = viewModelScope.launch {
-        val w = _week.value
+        val w = editableWeek() ?: return@launch
         val id = w.semesterId ?: return@launch
         val start = com.zzupocket.app.core.WeekMath.startOfWeek(date, w.startDay)
         store.saveWeekSettings(
@@ -198,7 +228,7 @@ class DisplaySettingsViewModel : ViewModel() {
     }
 
     fun setCurrentWeek(week: Int) = viewModelScope.launch {
-        val w = _week.value
+        val w = editableWeek() ?: return@launch
         val id = w.semesterId ?: return@launch
         val start = com.zzupocket.app.core.WeekMath.weekOneStart(java.time.LocalDate.now(), week, w.startDay)
         store.saveWeekSettings(
@@ -215,7 +245,7 @@ class DisplaySettingsViewModel : ViewModel() {
     }
 
     fun setWeekTotal(total: Int?) = viewModelScope.launch {
-        val w = _week.value
+        val w = editableWeek() ?: return@launch
         val id = w.semesterId ?: return@launch
         store.saveWeekSettings(
             id,
@@ -231,7 +261,7 @@ class DisplaySettingsViewModel : ViewModel() {
     }
 
     fun setWeekStartDay(day: com.zzupocket.app.core.WeekStartDay) = viewModelScope.launch {
-        val w = _week.value
+        val w = editableWeek() ?: return@launch
         val id = w.semesterId ?: return@launch
         store.saveWeekSettings(
             id,
@@ -247,7 +277,7 @@ class DisplaySettingsViewModel : ViewModel() {
     }
 
     fun resetWeek() = viewModelScope.launch {
-        val id = _week.value.semesterId ?: return@launch
+        val id = editableWeek()?.semesterId ?: return@launch
         store.clearWeekSettings(id)
         refreshWeek()
     }

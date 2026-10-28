@@ -40,8 +40,8 @@ import javax.crypto.Cipher
  *  1. 鉴权是 **CAS 网页会话 Cookie**，不是 EAS 的 JWT 裸令牌：进 `/stu` 会被 302 到
  *     `cas.s.zzu.edu.cn/cas/a/login?service=…`，登录后 302 回 service 落 ticket 与会话
  *     Cookie，之后接口只认 Cookie（实测挖掉 Cookie 的同一请求直接被 302 回 CAS 页）。
- *     → [client] 必须**自带 CookieJar 且跟随重定向**（与 `HttpClients.eas` 那套「不跟跳」
- *       正好相反，最快写法是 [Companion.newClient]）。
+ *     → CAS 跳转仅由受限 WebView 处理；[client] 自带 CookieJar 但不跟随重定向
+ *       （见 [Companion.newClient]）。
  *     → WebView 登录后取 Cookie 必须用 `https://gmsstu.zzu.edu.cn/stu/`：会话 Cookie
  *       `cn_com_southsoft_gmis_stu` 的 `Path=/stu`，用根路径 `getCookie` 取不到。
  *  2. 业务 URL 是 base64 包装：`/stu/{b64}`，其中
@@ -237,7 +237,8 @@ class GmsClient(
      * 会话路由 guid —— 优先从会话 Cookie 的值取（站点当前版本）；
      * 旧版本页面把 `#uuid` 写在 HTML 里，保留正则兜底。
      */
-    private var guid: String? = null
+    private data class SessionGuid(val value: String, val cookies: GmsCookieJar.SessionCookies?)
+    @Volatile private var guid: SessionGuid? = null
 
     /**
      * 会话是否存活：抓一次 `/stu/`，最终 URL 落回 CAS 登录页即未登录；
@@ -255,18 +256,20 @@ class GmsClient(
 
     /** 打开 `/stu/`；成功时缓存 guid 并返回页面 HTML。 */
     private suspend fun withGuid(): String = withContext(Dispatchers.IO) {
-        guid?.let { return@withContext it }
+        guid?.takeIf { it.cookies?.isCurrent() != false }?.let { return@withContext it.value }
         val response = executeOrNull(Request.Builder().url(STU_HOME).get().build())
             ?: throw AppError.Network("无法连接研究生教务，请检查网络")
         response.use { r ->
             val html = r.body.readBoundedText()
+            requireCurrentSession(r)
             if (r.code in 300..399 || r.request.url.host != HOST_GMS || r.request.url.toString().contains(CAS_LOGIN_MARK)) {
                 throw unlogin()
             }
-            guid = GUID_RE.find(html)?.groupValues?.get(1)
+            val value = GUID_RE.find(html)?.groupValues?.get(1)
                 ?: guidFromCookie()
                 ?: throw AppError.Parse("研究生教务页面缺少会话标识（可能改版了）")
-            guid!!
+            guid = SessionGuid(value, r.request.tag(GmsCookieJar.SessionCookies::class.java))
+            value
         }
     }
 
@@ -319,6 +322,7 @@ class GmsClient(
             ?: throw AppError.Network("无法连接研究生教务，请检查网络")
         response.use {
             val text = it.body.readBoundedText()
+            requireCurrentSession(it)
             if (it.code in 300..399 || it.request.url.host != HOST_GMS || it.request.url.toString().contains(CAS_LOGIN_MARK)) {
                 // 会话丢了的统一形状：任何接口都会被 302 到 CAS
                 throw AppError.ReLoginRequired("研究生教务登录态已失效，请重新登录")
@@ -334,10 +338,29 @@ class GmsClient(
         }
     }
 
-    private fun executeOrNull(request: Request): Response? = try {
-        client.newCall(request).execute()
-    } catch (e: IOException) {
-        null
+    private fun requireCurrentSession(response: Response) {
+        if (response.request.tag(GmsCookieJar.SessionCookies::class.java)?.isCurrent() == false) throw unlogin()
+    }
+
+    private fun executeOrNull(request: Request): Response? {
+        val session = (client.cookieJar as? GmsCookieJar)?.forCurrentSession()
+        // newBuilder shares the connection pool and dispatcher; only this call's cookie scope changes.
+        val scopedClient = session?.let { client.newBuilder().cookieJar(it).build() } ?: client
+        val scopedRequest = session?.let {
+            request.newBuilder().tag(GmsCookieJar.SessionCookies::class.java, it).build()
+        } ?: request
+        val response = try {
+            scopedClient.newCall(scopedRequest).execute()
+        } catch (e: IOException) {
+            return null
+        }
+        try {
+            requireCurrentSession(response)
+        } catch (e: AppError.ReLoginRequired) {
+            response.close()
+            throw e
+        }
+        return response
     }
 
     companion object {

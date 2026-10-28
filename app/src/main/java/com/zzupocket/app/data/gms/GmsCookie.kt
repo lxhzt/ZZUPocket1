@@ -63,22 +63,28 @@ object GmsCookie {
      */
     fun guidOf(cookies: Map<String, String>): String? =
         cookies[SESSION_COOKIE]?.takeIf { GUID_VALUE_RE.matches(it) }
+
+    /** The recorded academic protocol needs only this cookie, never CAS SSO material. */
+    fun academicSessionOnly(cookies: Map<String, String>): Map<String, String> =
+        guidOf(cookies)?.let { mapOf(SESSION_COOKIE to it) }.orEmpty()
 }
 
 /**
  * 进程内会话 Cookie 存储：既可被 OkHttp 的请求流程读写，也可由 WebView 登录后**注入**。
  *
- * 注意研究生系统要求**跟随重定向**（CAS 登录链靠 302），所以配套的 client 与
- * `HttpClients.eas` 那套"不跟跳"正好相反。
+ * CAS 重定向只在受限 WebView 中处理；原生查询客户端不跟随重定向。
  */
 class GmsCookieJar : CookieJar {
 
     private val store = mutableListOf<Cookie>()
+    private var generation = 0L
+    private var acceptingResponses = false
 
     /** 由 WebView 会话注入（humble：只保留 host/path/name/value 四项，够用） */
     @Synchronized
     fun seed(host: String, cookies: Map<String, String>) {
         require(host == "gmsstu.zzu.edu.cn") { "Unapproved cookie host" }
+        generation++
         store.removeAll { it.domain == host }
         cookies.entries.take(32).forEach { (name, value) ->
             if (name.length > 128 || value.length > 4096) return@forEach
@@ -87,6 +93,7 @@ class GmsCookieJar : CookieJar {
                     .name(name).value(value).secure().httpOnly().build()
             }.getOrNull()?.let { store.add(it) }
         }
+        acceptingResponses = store.isNotEmpty()
     }
 
     /** 已注入的 cookie 条数（0 = 还没有会话） */
@@ -98,15 +105,37 @@ class GmsCookieJar : CookieJar {
 
     /** 清空（退出登录时用） */
     @Synchronized
-    fun clear() = store.clear()
+    fun clear() {
+        generation++
+        acceptingResponses = false
+        store.clear()
+    }
+
+    /** Bind a request and its response to the same login, including across logout/re-login. */
+    @Synchronized
+    fun forCurrentSession(): SessionCookies = SessionCookies(this, generation)
+
+    class SessionCookies internal constructor(private val owner: GmsCookieJar, private val generation: Long) : CookieJar {
+        fun isCurrent(): Boolean = synchronized(owner) { owner.generation == generation }
+
+        override fun loadForRequest(url: HttpUrl): List<Cookie> = synchronized(owner) {
+            if (owner.generation == generation) owner.loadForRequest(url) else emptyList()
+        }
+
+        override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) = synchronized(owner) {
+            if (owner.generation == generation) owner.saveFromResponse(url, cookies)
+        }
+    }
 
     @Synchronized
     override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
-        if (!url.isHttps || url.host != "gmsstu.zzu.edu.cn") return
+        if (!acceptingResponses || !url.isHttps || url.host != "gmsstu.zzu.edu.cn") return
         prune()
-        cookies.take(32).filter { it.domain == url.host }.forEach { cookie ->
+        cookies.take(32).filter {
+            it.domain == url.host && it.name.length <= 128 && it.path.length <= 2048 && it.value.length <= 4096
+        }.forEach { cookie ->
             store.removeAll { it.name == cookie.name && it.domain == cookie.domain && it.path == cookie.path }
-            if (cookie.expiresAt > System.currentTimeMillis() && cookie.value.length <= 4096) {
+            if (cookie.expiresAt > System.currentTimeMillis()) {
                 // Even if the school omits Secure, never replay a session over HTTP.
                 store.add(Cookie.Builder().name(cookie.name).value(cookie.value).path(cookie.path)
                     .apply {

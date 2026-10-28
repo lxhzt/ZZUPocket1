@@ -1,5 +1,7 @@
 # ZZUPocket 安全检查与整改记录
 
+> 后续进展：2026-10-27 的 [无账号复核与整改](security-assessment-20261027.md)、[教务授权调查](security-auth-scope-investigation.md) 和 [本轮执行计划](security-work-plan-20261027.md)。本页保留早期结果，不代表后续源码的最终验证。
+
 > 后续记录（2026-10-26）：[公开前端分析](security-public-frontend-analysis.md)与[应用凭据隔离整改](security-credential-containment.md)。本文下方的测试数量和 APK 哈希属于 2026-10-25 的历史验证，不能作为后续改动产物的验收证据。
 
 日期：2026-10-25。目标仓库：`lxhzt/ZZUPocket1`，基线提交：`e2fb61fd333f66174445350e82cb54d19e3b7c08`。

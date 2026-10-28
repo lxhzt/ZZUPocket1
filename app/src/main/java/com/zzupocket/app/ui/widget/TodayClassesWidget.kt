@@ -74,7 +74,9 @@ class TodayClassesWidget : AppWidgetProvider() {
                 val ctx = context.applicationContext
                 val schedule = WidgetData.loadSchedule()
                 render(ctx, mgr, ids, schedule, WidgetData.prefs())
-                Widgets.scheduleNextBoundary(ctx, schedule.nextBoundaryMillis)
+                WidgetData.withCurrentSchedule(schedule) {
+                    Widgets.scheduleNextBoundary(ctx, schedule.nextBoundaryMillis)
+                }
             } catch (t: Throwable) {
                 Log.w(TAG, "刷新「今明课表」失败", t)
             } finally {
@@ -94,16 +96,18 @@ class TodayClassesWidget : AppWidgetProvider() {
             schedule: WidgetScheduleBundle,
             prefs: UiPrefs,
         ) {
-            val colors = WidgetStyle.colors(context, prefs)
-            val dark = WidgetStyle.isDark(context, prefs)
-            val click = Widgets.openApp(context, AppRoutes.SCHEDULE)
-            ids.forEach { id ->
-                val (widthDp, heightDp) = Widgets.sizeDp(mgr, id)
-                val rows = WidgetSchedule.columnRows(heightDp)
-                val detail = WidgetSchedule.rowDetail((widthDp - 28 - 17) / 2)   // 单列宽
-                val plan = schedule.twoDayPlan(rows)
-                val rv = build(context, plan, colors, dark, click, heightDp, detail)
-                runCatching { mgr.updateAppWidget(id, rv) }
+            WidgetData.withCurrentSchedule(schedule) {
+                val colors = WidgetStyle.colors(context, prefs)
+                val dark = WidgetStyle.isDark(context, prefs)
+                val click = Widgets.openApp(context, AppRoutes.SCHEDULE)
+                ids.forEach { id ->
+                    val (widthDp, heightDp) = Widgets.sizeDp(mgr, id)
+                    val rows = WidgetSchedule.columnRows(heightDp)
+                    val detail = WidgetSchedule.rowDetail((widthDp - 28 - 17) / 2)   // 单列宽
+                    val plan = schedule.twoDayPlan(rows)
+                    val rv = build(context, plan, colors, dark, click, heightDp, detail)
+                    runCatching { mgr.updateAppWidget(id, rv) }
+                }
             }
         }
 

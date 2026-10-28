@@ -66,5 +66,19 @@ check('overlay hiding and obscured touch filtering enabled',
 eas = (SRC / 'data/eas/EasClient.kt').read_text(encoding='utf-8')
 check('general EAS diagnostic transport disabled',
       'com.zzupocket.app.core.security.SecurityPolicy.requireDiagnostics()' in eas)
+verification_path = ROOT / 'gradle/verification-metadata.xml'
+verification_ok = False
+if verification_path.exists():
+    verification = ET.parse(verification_path).getroot()
+    artifacts = verification.findall('.//{*}artifact')
+    verification_ok = (
+        verification.findtext('.//{*}verify-metadata') == 'true' and bool(artifacts) and
+        not verification.findall('.//{*}trusted-artifacts/{*}trust') and
+        all(any(re.fullmatch(r'[a-f0-9]{64}', n.get('value', ''))
+                for n in artifact.findall('{*}sha256')) for artifact in artifacts)
+    )
+check('resolved dependency artifacts and metadata have SHA256 pins without broad exemptions', verification_ok)
+check('local verification workflow enforces strict dependency verification',
+      "'--dependency-verification', 'strict'" in text('tools/run-local-security.ps1'))
 print(json.dumps({'network_requests': 0, 'checks': results, 'passed': all(r['passed'] for r in results)}, indent=2))
 raise SystemExit(0 if all(r['passed'] for r in results) else 1)

@@ -1,0 +1,513 @@
+{
+  "date": "2026-10-27",
+  "base_commit": "9a0fdd6db0afa616a1b660e9d7c21e0f1dd4c47b",
+  "constraints": {
+    "method": "GET",
+    "direct_requests": 7,
+    "bytes_read": 267282,
+    "follow_redirects": false,
+    "execute_javascript": false,
+    "cookies_sent": false,
+    "credentials_used": false,
+    "school_business_data_requests": 0,
+    "port_scans": 0,
+    "school_stress_requests": 0
+  },
+  "community_sources": [
+    {
+      "url": "https://github.com/ShiGuangSchedule/shiguang_warehouse/blob/7c9e1907635cb1c2d481b316e6f52d69dc77edff/resources/ZZU/zzu.js",
+      "gitBlob": "282b6d7383ef382bd2556f589fdbf28826102fff",
+      "characters": 8629,
+      "excerpts": [
+        {
+          "line": 32,
+          "text": "            const res = await fetch(\"/student/for-std/course-table\", {"
+        },
+        {
+          "line": 38,
+          "text": "                credentials: \"include\""
+        },
+        {
+          "line": 65,
+          "text": "            const res = await fetch(`/student/ws/semester/get/${semesterId}`, {"
+        },
+        {
+          "line": 71,
+          "text": "                credentials: \"include\""
+        },
+        {
+          "line": 89,
+          "text": "            const url = `/student/for-std/course-table/semester/${semesterId}/print-data?semesterId=${semesterId}&hasExperiment=true`;"
+        },
+        {
+          "line": 90,
+          "text": "            const res = await fetch(url, {"
+        },
+        {
+          "line": 96,
+          "text": "                credentials: \"include\""
+        }
+      ]
+    },
+    {
+      "url": "https://github.com/ShiGuangSchedule/shiguang_warehouse/blob/7c9e1907635cb1c2d481b316e6f52d69dc77edff/resources/ZZU/adapters.yaml",
+      "gitBlob": "66a44fe4fafc17acd5d33f8ce98e4bd597b75144",
+      "characters": 368,
+      "excerpts": [
+        {
+          "line": 8,
+          "text": "    import_url: \"https://cas.s.zzu.edu.cn/cas/a/login?service=https%3A%2F%2Fjwxt.zzu.edu.cn%2Fstudent%2Fsso%2Flogin\""
+        },
+        {
+          "line": 10,
+          "text": "    description: \"登录之后向右下角滑,点击课表.课表出现后点击右下角导入即可.\""
+        }
+      ]
+    },
+    {
+      "url": "https://github.com/zzu-sensei/zzu_my/blob/59cbce00fbce56dcf0c196255ae94f963f2a11db/zzupy/web/eas.py",
+      "gitBlob": "1a02341ce93be61fc6f98a2ba7f56ee22dfae59d",
+      "characters": 9868,
+      "excerpts": [
+        {
+          "line": 33,
+          "text": "    TOKEN_LOGIN_URL: Final = \"https://cas.s.zzu.edu.cn/cas/t/login\""
+        },
+        {
+          "line": 34,
+          "text": "    STUDENT_SSO_URL: Final = \"https://jwxt.zzu.edu.cn/student/sso/login\""
+        },
+        {
+          "line": 56,
+          "text": "            follow_redirects=True,"
+        },
+        {
+          "line": 63,
+          "text": "                \"Authorization\": user_token,"
+        },
+        {
+          "line": 64,
+          "text": "                \"X-Id-Token\": user_token,"
+        },
+        {
+          "line": 67,
+          "text": "        self._client.cookies.set(\"userToken\", user_token, \".zzu.edu.cn\", \"/\")"
+        },
+        {
+          "line": 109,
+          "text": "                self.TOKEN_LOGIN_URL,"
+        },
+        {
+          "line": 110,
+          "text": "                params={\"service\": self.STUDENT_SSO_URL},"
+        },
+        {
+          "line": 132,
+          "text": "                context={\"url\": self.TOKEN_LOGIN_URL},"
+        },
+        {
+          "line": 138,
+          "text": "                context={\"url\": self.TOKEN_LOGIN_URL},"
+        }
+      ]
+    }
+  ],
+  "official_sources": [
+    {
+      "url": "https://www5.zzu.edu.cn/jwc/info/1125/4859.htm",
+      "claim": "Current official notice directs students to the undergraduate student portal; no restricted-grant contract."
+    },
+    {
+      "url": "https://www5.zzu.edu.cn/net/info/1023/2610.htm",
+      "claim": "Official mobile portal includes academic and financial services; no token-scope proof."
+    }
+  ],
+  "result": {
+    "current_student_web_login_observed": true,
+    "community_cookie_course_import_found": true,
+    "academic_only_readonly_grant_proven": false,
+    "funds_isolation_proven": false,
+    "live_login_tested": false
+  },
+  "direct_requests": [
+    {
+      "url": "https://jwxt.zzu.edu.cn/",
+      "timestamp_utc": "2026-10-27T09:25:04.351214+00:00",
+      "method": "GET",
+      "status": 301,
+      "headers": {
+        "Content-Type": "text/html",
+        "Content-Length": "166",
+        "Location": "https://jwxt.zzu.edu.cn/eams",
+        "Strict-Transport-Security": "max-age=63072000; includeSubdomains; preload",
+        "X-Content-Type-Options": "nosniff"
+      },
+      "set_cookie_attributes": [],
+      "tls_metadata_unavailable": true,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "local_file": "79530312680758f7.html"
+    },
+    {
+      "url": "https://jw.v.zzu.edu.cn/eams/login.action",
+      "timestamp_utc": "2026-10-27T09:25:14.588326+00:00",
+      "method": "GET",
+      "status": 200,
+      "headers": {
+        "x-content-type-options": "nosniff",
+        "content-type": "text/html;charset=UTF-8"
+      },
+      "set_cookie_attributes": [
+        "JSESSIONID; Path=/eams; HttpOnly",
+        "GSESSIONID; Path=/; HttpOnly"
+      ],
+      "tls": {
+        "version": "TLSv1.2",
+        "cipher": [
+          "ECDHE-RSA-AES256-GCM-SHA384",
+          "TLSv1.2",
+          256
+        ],
+        "certificate": {
+          "subject": [
+            [
+              [
+                "countryName",
+                "CN"
+              ]
+            ],
+            [
+              [
+                "stateOrProvinceName",
+                "河南省"
+              ]
+            ],
+            [
+              [
+                "localityName",
+                "郑州市"
+              ]
+            ],
+            [
+              [
+                "organizationName",
+                "郑州大学"
+              ]
+            ],
+            [
+              [
+                "commonName",
+                "*.v.zzu.edu.cn"
+              ]
+            ]
+          ],
+          "issuer": [
+            [
+              [
+                "countryName",
+                "US"
+              ]
+            ],
+            [
+              [
+                "organizationName",
+                "DigiCert, Inc."
+              ]
+            ],
+            [
+              [
+                "commonName",
+                "DigiCert Basic OV G2 TLS CN RSA4096 SHA256 2022 CA1"
+              ]
+            ]
+          ],
+          "version": 3,
+          "serialNumber": "066EB4ACABC37C4BB119A4C3C1E6BD1E",
+          "notBefore": "May 21 00:00:00 2026 GMT",
+          "notAfter": "Dec  5 23:59:59 2026 GMT",
+          "subjectAltName": [
+            [
+              "DNS",
+              "*.v.zzu.edu.cn"
+            ],
+            [
+              "DNS",
+              "v.zzu.edu.cn"
+            ]
+          ],
+          "OCSP": [
+            "http://ocsp.digicert.cn"
+          ],
+          "caIssuers": [
+            "http://cacerts.digicert.cn/DigiCertBasicOVG2TLSCNRSA4096SHA2562022CA1.crt"
+          ],
+          "crlDistributionPoints": [
+            "http://crl.digicert.cn/DigiCertBasicOVG2TLSCNRSA4096SHA2562022CA1.crl"
+          ]
+        }
+      },
+      "bytes": 4852,
+      "sha256": "31824998b994f1105c39e5af4aa7743bb4fe54bb6c7b9efbc2cb8b8c5dce5a75",
+      "local_file": "833d0288768ca602.html"
+    },
+    {
+      "url": "https://cas.s.zzu.edu.cn/cas/a/login",
+      "timestamp_utc": "2026-10-27T09:25:24.917529+00:00",
+      "method": "GET",
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html;charset=UTF-8",
+        "Cache-Control": "no-cache, no-store, max-age=0, must-revalidate",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY"
+      },
+      "set_cookie_attributes": [],
+      "tls": {
+        "version": "TLSv1.3",
+        "cipher": [
+          "TLS_AES_256_GCM_SHA384",
+          "TLSv1.3",
+          256
+        ],
+        "certificate": {
+          "subject": [
+            [
+              [
+                "countryName",
+                "CN"
+              ]
+            ],
+            [
+              [
+                "stateOrProvinceName",
+                "河南省"
+              ]
+            ],
+            [
+              [
+                "localityName",
+                "郑州市"
+              ]
+            ],
+            [
+              [
+                "organizationName",
+                "郑州大学"
+              ]
+            ],
+            [
+              [
+                "commonName",
+                "*.s.zzu.edu.cn"
+              ]
+            ]
+          ],
+          "issuer": [
+            [
+              [
+                "countryName",
+                "US"
+              ]
+            ],
+            [
+              [
+                "organizationName",
+                "DigiCert, Inc."
+              ]
+            ],
+            [
+              [
+                "commonName",
+                "DigiCert Basic OV G2 TLS CN RSA4096 SHA256 2022 CA1"
+              ]
+            ]
+          ],
+          "version": 3,
+          "serialNumber": "096B3515FA76F4876CFE45537EB9F68A",
+          "notBefore": "May 21 00:00:00 2026 GMT",
+          "notAfter": "Dec  5 23:59:59 2026 GMT",
+          "subjectAltName": [
+            [
+              "DNS",
+              "*.s.zzu.edu.cn"
+            ],
+            [
+              "DNS",
+              "s.zzu.edu.cn"
+            ]
+          ],
+          "OCSP": [
+            "http://ocsp.digicert.cn"
+          ],
+          "caIssuers": [
+            "http://cacerts.digicert.cn/DigiCertBasicOVG2TLSCNRSA4096SHA2562022CA1.crt"
+          ],
+          "crlDistributionPoints": [
+            "http://crl.digicert.cn/DigiCertBasicOVG2TLSCNRSA4096SHA2562022CA1.crl"
+          ]
+        }
+      },
+      "bytes": 126510,
+      "sha256": "e557357930c2799f815c2b21cefc495a17c275cd996a6fcef980bd14685e65cf",
+      "local_file": "c0df592fd091b197.html"
+    },
+    {
+      "url": "https://jwxt.zzu.edu.cn/eams",
+      "timestamp_utc": "2026-10-27T09:25:57.144654+00:00",
+      "method": "GET",
+      "status": 404,
+      "headers": {
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": "146",
+        "Strict-Transport-Security": "max-age=63072000; includeSubdomains; preload",
+        "X-Content-Type-Options": "nosniff"
+      },
+      "set_cookie_attributes": [
+        "srv_id; path=/; HttpOnly; SameSite=Strict"
+      ],
+      "tls_metadata_unavailable": true,
+      "bytes": 146,
+      "sha256": "55f7d9e99b8e2d4e0e193b2f0275501e6d9c1ebd29cadbea6a0da48a8587e3e0",
+      "local_file": "11746b8f4a58342f.html"
+    },
+    {
+      "url": "https://jwxt.zzu.edu.cn/student/sso/login",
+      "timestamp_utc": "2026-10-27T09:26:53.531793+00:00",
+      "method": "GET",
+      "status": 302,
+      "headers": {
+        "Content-Length": "0",
+        "Location": "https://cas.s.zzu.edu.cn/cas/login?service=https%3A%2F%2Fjwxt.zzu.edu.cn%2Fstudent%2Fsso%2Flogin",
+        "Strict-Transport-Security": "max-age=63072000; includeSubdomains; preload",
+        "X-Content-Type-Options": "nosniff"
+      },
+      "set_cookie_attributes": [
+        "srv_id; path=/; HttpOnly; SameSite=Strict",
+        "__pstsid__; Expires=Thu, 29-Oct-26 09:27:01 GMT; Max-Age=172800; Path=/student; HttpOnly"
+      ],
+      "tls_metadata_unavailable": true,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "local_file": "16427fd68eef4a1c.txt"
+    },
+    {
+      "url": "https://cas.s.zzu.edu.cn/cas/login?service=https%3A%2F%2Fjwxt.zzu.edu.cn%2Fstudent%2Fsso%2Flogin",
+      "timestamp_utc": "2026-10-27T09:27:54.044600+00:00",
+      "method": "GET",
+      "status": 302,
+      "headers": {
+        "Content-Type": "text/html",
+        "Content-Length": "151",
+        "Location": "/cas/a/login?service=https%3A%2F%2Fjwxt.zzu.edu.cn%2Fstudent%2Fsso%2Flogin"
+      },
+      "set_cookie_attributes": [],
+      "tls_metadata_unavailable": true,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "local_file": "206d34deeee54347.html"
+    },
+    {
+      "url": "https://cas.s.zzu.edu.cn/cas/a/login?service=https%3A%2F%2Fjwxt.zzu.edu.cn%2Fstudent%2Fsso%2Flogin",
+      "timestamp_utc": "2026-10-27T09:27:55.116049+00:00",
+      "method": "GET",
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/html;charset=UTF-8",
+        "Cache-Control": "no-cache, no-store, max-age=0, must-revalidate",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY"
+      },
+      "set_cookie_attributes": [],
+      "tls": {
+        "version": "TLSv1.3",
+        "cipher": [
+          "TLS_AES_256_GCM_SHA384",
+          "TLSv1.3",
+          256
+        ],
+        "certificate": {
+          "subject": [
+            [
+              [
+                "countryName",
+                "CN"
+              ]
+            ],
+            [
+              [
+                "stateOrProvinceName",
+                "河南省"
+              ]
+            ],
+            [
+              [
+                "localityName",
+                "郑州市"
+              ]
+            ],
+            [
+              [
+                "organizationName",
+                "郑州大学"
+              ]
+            ],
+            [
+              [
+                "commonName",
+                "*.s.zzu.edu.cn"
+              ]
+            ]
+          ],
+          "issuer": [
+            [
+              [
+                "countryName",
+                "US"
+              ]
+            ],
+            [
+              [
+                "organizationName",
+                "DigiCert, Inc."
+              ]
+            ],
+            [
+              [
+                "commonName",
+                "DigiCert Basic OV G2 TLS CN RSA4096 SHA256 2022 CA1"
+              ]
+            ]
+          ],
+          "version": 3,
+          "serialNumber": "096B3515FA76F4876CFE45537EB9F68A",
+          "notBefore": "May 21 00:00:00 2026 GMT",
+          "notAfter": "Dec  5 23:59:59 2026 GMT",
+          "subjectAltName": [
+            [
+              "DNS",
+              "*.s.zzu.edu.cn"
+            ],
+            [
+              "DNS",
+              "s.zzu.edu.cn"
+            ]
+          ],
+          "OCSP": [
+            "http://ocsp.digicert.cn"
+          ],
+          "caIssuers": [
+            "http://cacerts.digicert.cn/DigiCertBasicOVG2TLSCNRSA4096SHA2562022CA1.crt"
+          ],
+          "crlDistributionPoints": [
+            "http://crl.digicert.cn/DigiCertBasicOVG2TLSCNRSA4096SHA2562022CA1.crl"
+          ]
+        }
+      },
+      "bytes": 135774,
+      "sha256": "e3068cff9489aab657ab7c29172166b26d3f3423c35705d6c574adeb40d296f6",
+      "local_file": "cb57055f9f249218.html"
+    }
+  ],
+  "raw_request_manifest_sha256": "9a099d223ba0c2161976416c0e3a0326bbbdf017ae9450ac3a0be48e7a6bbd7c",
+  "raw_resources_committed": false
+}

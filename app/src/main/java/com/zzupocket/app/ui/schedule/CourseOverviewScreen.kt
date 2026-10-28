@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.zzupocket.app.core.ScheduleText
+import com.zzupocket.app.core.AppGraph
 import com.zzupocket.app.domain.Course
 
 /**
@@ -47,15 +48,26 @@ fun CourseOverviewScreen(
     vm: ScheduleViewModel = viewModel(),
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
+    val observedProfile by AppGraph.gmsScheduleSource.profileChanges.collectAsStateWithLifecycle()
+    val profile = observedProfile
 
     // 自己的 VM 实例也要先加载学期列表，之后再切到指定学期
     LaunchedEffect(state.semesters, semesterId) {
-        if (state.semesters.isNotEmpty() && state.selectedSemester?.id != semesterId) {
+        if (semesterId >= 0 && state.semesters.isNotEmpty() && state.selectedSemester?.id != semesterId) {
             vm.selectSemester(semesterId)
         }
     }
 
-    val courses = state.courses.sortedBy { it.nameZh }
+    LaunchedEffect(profile, semesterId) {
+        vm.closeDetail()
+        if (profile?.semesterId == semesterId && profile?.isCurrent() == true) vm.loadGmsWeek()
+    }
+    val activeGrad = profile?.semesterId == semesterId && profile?.isCurrent() == true
+    val courses = when {
+        semesterId >= 0 -> state.courses.filter { it.semesterId == semesterId }
+        activeGrad -> state.gmsCourses.filter { it.semesterId == semesterId }
+        else -> emptyList()
+    }.sortedBy { it.nameZh }
 
     Scaffold(
         topBar = {
@@ -86,13 +98,17 @@ fun CourseOverviewScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items(courses, key = { it.key }) { course ->
-                    CourseCard(course) { vm.openDetail(course) }
+                    CourseCard(course) {
+                        AppGraph.gmsScheduleSource.withCurrentProfile(profile) {
+                            if (course.semesterId >= 0 || course.semesterId == profile?.semesterId) vm.openDetail(course)
+                        }
+                    }
                 }
             }
         }
     }
 
-    state.detailCourse?.let { course ->
+    state.detailCourse?.takeIf { it.semesterId == semesterId && (semesterId >= 0 || activeGrad) }?.let { course ->
         CourseDetailSheet(course = course, onDismiss = vm::closeDetail)
     }
 }

@@ -15,8 +15,8 @@ import com.zzupocket.app.data.ecard.EcardClient
  *        └─(host/open)→ tid ─(getToken)→ 一卡通 accessToken（45 分钟）
  *
  * ⚠️ **不持久化密码**：userToken 过期后需要用户重新登录一次。换来的好处是设备上
- * 不存在可直接复用的账号密码。首次登录时把本设备在统一认证安全中心设为可信设备后，
- * 重新登录不再需要短信验证码。
+ * 不存在由原生登录流程持久保存的账号密码。是否需要短信验证由学校决定，
+ * 不要求用户为使用本 App 将设备设为可信设备。
  */
 class AuthRepository(
     private val store: TokenStore,

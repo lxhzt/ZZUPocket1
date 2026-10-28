@@ -424,7 +424,7 @@ class ScheduleRepository(
     /**
      * 把某个来源的课表整体写入（先按来源删、再插；**不会碰 `custom` 日程**）。
      *
-     * 研究生走这条：`semesterId = GmsScheduleMapper.GRAD_SEMESTER_ID`、`source = "gms"`。
+     * 研究生走这条：semesterId 为本次登录的独立负数分区，source 为 "gms"。
      *
      * @return true = 内容与上次不同（界面上课表确实变了）；false = 只是刷新了一遍，内容一模一样
      *   —— 后者按用户要求**界面一个字都不该动**，但"获取时间"仍会更新。

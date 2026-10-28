@@ -73,7 +73,9 @@ class NextClassWidget : AppWidgetProvider() {
                 val ctx = context.applicationContext
                 val schedule = WidgetData.loadSchedule()
                 render(ctx, mgr, ids, schedule, WidgetData.prefs())
-                Widgets.scheduleNextBoundary(ctx, schedule.nextBoundaryMillis)
+                WidgetData.withCurrentSchedule(schedule) {
+                    Widgets.scheduleNextBoundary(ctx, schedule.nextBoundaryMillis)
+                }
             } catch (t: Throwable) {
                 // 组件刷新失败不该让用户看到崩溃，桌面保持上一次的内容即可
                 Log.w(TAG, "刷新「下一节课」失败", t)
@@ -94,21 +96,23 @@ class NextClassWidget : AppWidgetProvider() {
             schedule: WidgetScheduleBundle,
             prefs: UiPrefs,
         ) {
-            val colors = WidgetStyle.colors(context, prefs)
-            val dark = WidgetStyle.isDark(context, prefs)
-            val click = Widgets.openApp(context, AppRoutes.SCHEDULE)
-            ids.forEach { id ->
-                val (_, heightDp) = Widgets.sizeDp(mgr, id)
-                val plan = schedule.nextClassPlan(WidgetSchedule.nextClassPreviews(heightDp))
-                val rv = build(
-                    context = context,
-                    plan = plan,
-                    colors = colors,
-                    dark = dark,
-                    click = click,
-                    detail = WidgetSchedule.nextClassDetail(heightDp),
-                )
-                runCatching { mgr.updateAppWidget(id, rv) }
+            WidgetData.withCurrentSchedule(schedule) {
+                val colors = WidgetStyle.colors(context, prefs)
+                val dark = WidgetStyle.isDark(context, prefs)
+                val click = Widgets.openApp(context, AppRoutes.SCHEDULE)
+                ids.forEach { id ->
+                    val (_, heightDp) = Widgets.sizeDp(mgr, id)
+                    val plan = schedule.nextClassPlan(WidgetSchedule.nextClassPreviews(heightDp))
+                    val rv = build(
+                        context = context,
+                        plan = plan,
+                        colors = colors,
+                        dark = dark,
+                        click = click,
+                        detail = WidgetSchedule.nextClassDetail(heightDp),
+                    )
+                    runCatching { mgr.updateAppWidget(id, rv) }
+                }
             }
         }
 

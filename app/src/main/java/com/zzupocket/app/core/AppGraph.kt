@@ -24,6 +24,12 @@ import com.zzupocket.app.core.net.HttpClients
 import com.zzupocket.app.focus.PomodoroEngine
 import com.zzupocket.app.focus.PomodoroNotifications
 import kotlinx.serialization.json.Json
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collectLatest
 
 /**
  * 极简手动依赖容器。
@@ -35,9 +41,24 @@ import kotlinx.serialization.json.Json
 object AppGraph {
 
     private lateinit var appContext: Context
+    private val profileScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private var profileObserver: Job? = null
 
     fun init(context: Context) {
         appContext = context.applicationContext
+    }
+
+    private fun observeGmsProfiles(source: com.zzupocket.app.data.gms.GmsScheduleSource) {
+        profileObserver?.cancel()
+        profileObserver = profileScope.launch {
+            source.profileChanges.collectLatest {
+                // Launcher retains RemoteViews until explicitly replaced, even after logout.
+                runCatching {
+                    com.zzupocket.app.ui.widget.Widgets.clearScheduleWidgets(appContext)
+                    com.zzupocket.app.ui.widget.Widgets.refreshAll(appContext)
+                }
+            }
+        }
     }
 
     /**
@@ -114,7 +135,7 @@ object AppGraph {
 
     /**
      * 研究生课表数据源。协议、客户端与解析器由贡献者 Inspire2431 在真实会话里逆出（PR #3）；
-     * 这里只接「会话从哪来」—— 走 App 内置 WebView 登录拿 Cookie，不碰密码。
+     * 这里只接「会话从哪来」—— 由内置 WebView 加载学校登录页，原生代码不读取密码输入。
      */
     val gmsScheduleSource: com.zzupocket.app.data.gms.GmsScheduleSource by lazy {
         com.zzupocket.app.data.gms.GmsScheduleSource(
@@ -124,7 +145,10 @@ object AppGraph {
             ),
             jar = gmsCookieJar,
             store = tokenStore,
-        ).also { it.restore() }
+        ).also {
+            it.restore()
+            observeGmsProfiles(it)
+        }
     }
 
     val db: AppDatabase by lazy { AppDatabase.get(appContext) }

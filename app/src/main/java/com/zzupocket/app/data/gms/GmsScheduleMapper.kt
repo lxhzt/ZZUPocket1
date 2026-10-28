@@ -45,6 +45,7 @@ object GmsScheduleMapper {
     fun toSessions(
         entries: List<GmsClient.WeekEntry>,
         periods: List<Period> = emptyList(),
+        semesterId: Int = GRAD_SEMESTER_ID,
     ): List<Session> {
         if (entries.isEmpty()) return emptyList()
         val groups = entries.groupBy {
@@ -65,8 +66,8 @@ object GmsScheduleMapper {
                 val start = periods.firstOrNull { it.indexNo == run.first }
                 val end = periods.firstOrNull { it.indexNo == run.last }
                 out += Session(
-                    id = "gms:${first.weekIndex}:${first.weekday}:${run.first}-${run.last}:$key",
-                    semesterId = GRAD_SEMESTER_ID,
+                    id = "gms:$semesterId:${first.weekIndex}:${first.weekday}:${run.first}-${run.last}:$key",
+                    semesterId = semesterId,
                     source = GmsScheduleSource.SOURCE,
                     courseCode = key,
                     courseName = first.courseName,
@@ -89,12 +90,14 @@ object GmsScheduleMapper {
 
     /** 把同一门课的多个时段聚成 [Course]（课程详情、配色、总览都用它）。 */
     fun toCourses(sessions: List<Session>): List<Course> =
-        sessions.groupBy { it.courseCode }
-            .map { (key, list) ->
+        sessions.groupBy { it.semesterId to it.courseCode }
+            .map { (_, list) ->
+                val key = list.first().courseCode
+                val semesterId = list.first().semesterId
                 val first = list.first()
                 Course(
-                    key = "gms:$key",
-                    semesterId = GRAD_SEMESTER_ID,
+                    key = "gms:$semesterId:$key",
+                    semesterId = semesterId,
                     code = key,
                     nameZh = first.courseName,
                     credits = 0.0,
@@ -122,13 +125,14 @@ object GmsScheduleMapper {
         today: LocalDate,
         anchoredMonday: LocalDate? = null,
         anchoredWeek: Int? = null,
+        semesterId: Int = GRAD_SEMESTER_ID,
     ): Semester {
         val weeks = entries.map { it.weekIndex }.distinct().sorted()
         val first = weeks.firstOrNull() ?: 1
         val last = weeks.lastOrNull() ?: first
         val currentWeek = anchoredWeek ?: GmsWeekAlign.currentWeekIndex(entries, current)
         return Semester(
-            id = GRAD_SEMESTER_ID,
+            id = semesterId,
             nameZh = term.text.ifBlank { "研究生课表" },
             schoolYear = "",
             startDate = anchoredMonday ?: currentWeek?.let { GmsWeekAlign.weekOneMonday(today, it) },

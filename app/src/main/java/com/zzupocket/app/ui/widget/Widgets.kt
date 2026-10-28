@@ -1,4 +1,4 @@
-﻿package com.zzupocket.app.ui.widget
+package com.zzupocket.app.ui.widget
 
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -65,7 +65,9 @@ object Widgets {
                     if (todayIds.isNotEmpty()) {
                         TodayClassesWidget.render(appContext, mgr, todayIds, schedule, prefs)
                     }
-                    scheduleNextBoundary(appContext, schedule.nextBoundaryMillis)
+                    WidgetData.withCurrentSchedule(schedule) {
+                        scheduleNextBoundary(appContext, schedule.nextBoundaryMillis)
+                    }
                 }
             }
 
@@ -74,6 +76,19 @@ object Widgets {
                     .onSuccess { EnergyCardWidget.render(appContext, mgr, balanceIds, it, prefs) }
                     .onFailure { Log.w(TAG, "读取电量/余额失败，本轮不刷新该组件", it) }
             }
+        }
+    }
+
+    /** Clear old RemoteViews even if the following database refresh fails. */
+    fun clearScheduleWidgets(context: Context) {
+        val appContext = context.applicationContext
+        val mgr = AppWidgetManager.getInstance(appContext) ?: return
+        val empty = WidgetData.emptySchedule()
+        val prefs = com.zzupocket.app.data.prefs.UiPrefs()
+        WidgetData.withCurrentSchedule(empty) {
+            NextClassWidget.render(appContext, mgr, idsOf(appContext, mgr, NextClassWidget::class.java), empty, prefs)
+            TodayClassesWidget.render(appContext, mgr, idsOf(appContext, mgr, TodayClassesWidget::class.java), empty, prefs)
+            scheduleNextBoundary(appContext, null)
         }
     }
 

@@ -1,7 +1,9 @@
 package com.zzupocket.app.data.gms
 
 import com.zzupocket.app.core.AppError
-import com.zzupocket.app.data.auth.TokenStore
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * 研究生课表的数据源（gmsstu / 新研究生系统）。
@@ -23,56 +25,91 @@ import com.zzupocket.app.data.auth.TokenStore
 class GmsScheduleSource(
     private val gms: GmsClient,
     private val jar: GmsCookieJar,
-    private val store: TokenStore,
+    private val store: GmsSessionStorage,
 ) {
 
-    /** 启动时把上次存的会话灌回 CookieJar（没有就什么都不做） */
-    fun restore() {
-        val saved = GmsCookie.parse(store.gmsCookie)
-        if (GmsCookie.guidOf(saved) == null) return
-        jar.seed(HOST, saved)
-        gms.resetSession()
-    }
+    private val _profileChanges = MutableStateFlow<GmsProfileSnapshot?>(null)
+    val profileChanges: StateFlow<GmsProfileSnapshot?> = _profileChanges.asStateFlow()
+    private var currentLoginAt = 0L
 
-    /**
-     * WebView 登录成功后调用：注入会话 Cookie 并落盘。
-     * @param cookieHeader `CookieManager.getCookie(COOKIE_URL)` 的原样字符串
-     * @return 是否真的拿到了会话（false = 没登录成功，别当成功用）
-     */
-    fun onWebViewLogin(cookieHeader: String?): Boolean {
-        val parsed = GmsCookie.parse(cookieHeader)
-        if (GmsCookie.guidOf(parsed) == null) return false
-        jar.seed(HOST, parsed)
-        store.gmsCookie = GmsCookie.join(parsed)
-        store.gmsCookieAt = System.currentTimeMillis()
-        gms.resetSession()
+    @Synchronized
+    fun profileSnapshot(): GmsProfileSnapshot? = _profileChanges.value?.takeIf { it.isCurrent() }
+
+    /** Only short synchronous publication belongs here; never suspend or perform network/database work. */
+    @Synchronized
+    fun withCurrentProfile(snapshot: GmsProfileSnapshot?, action: () -> Unit): Boolean {
+        if (_profileChanges.value !== snapshot || snapshot?.isCurrent() == false) return false
+        action()
         return true
     }
 
-    /** 退出登录：清内存与存储里的会话（登录状态卡片据此回到"未登录"） */
-    fun clear() {
-        jar.clear()
-        store.gmsCookie = null
-        store.gmsCookieAt = 0L
-        gms.resetSession()
+    @Synchronized
+    fun restore() {
+        invalidateMemory()
+        store.restoreGmsSession()?.let(::activate)
     }
 
-    /** 上次登录研究生系统的时间（毫秒；0 = 从没登录过） */
-    fun loginAt(): Long = store.gmsCookieAt
+    /** A new WebView login always gets a fresh local partition, even if its cookie is unchanged. */
+    @Synchronized
+    fun onWebViewLogin(cookieHeader: String?): Boolean {
+        val parsed = GmsCookie.academicSessionOnly(GmsCookie.parse(cookieHeader))
+        if (parsed.isEmpty()) return false
+        val saved = store.adoptGmsSession(GmsCookie.join(parsed), System.currentTimeMillis())
+        activate(saved)
+        return true
+    }
 
-    fun hasSession(): Boolean = jar.size() > 0
+    private fun activate(saved: GmsStoredSession) {
+        jar.seed(HOST, GmsCookie.academicSessionOnly(GmsCookie.parse(saved.cookie)))
+        gms.resetSession()
+        val cookies = jar.forCurrentSession()
+        val semesterId = saved.semesterId
+        currentLoginAt = saved.loginAt
+        _profileChanges.value = GmsProfileSnapshot(semesterId) {
+            synchronized(this) {
+                _profileChanges.value?.semesterId == semesterId && cookies.isCurrent()
+            }
+        }
+    }
+
+    private fun invalidateMemory() {
+        jar.clear()
+        gms.resetSession()
+        currentLoginAt = 0L
+        _profileChanges.value = null
+    }
+
+    /** Revoke the active pointer and credentials; retain every imported database partition. */
+    @Synchronized
+    fun clear() {
+        invalidateMemory()
+        store.clearGmsSession()
+    }
+
+    @Synchronized
+    fun loginAt(): Long = currentLoginAt
+
+    @Synchronized
+    fun hasSession(): Boolean = profileSnapshot() != null && jar.size() > 0
 
     /** 会话是否还活着（会真发一次请求；未登录返回 false，网络问题照常上抛） */
-    suspend fun sessionAlive(): Boolean = try {
-        gms.isSessionAlive()
-    } catch (_: AppError.ReLoginRequired) {
-        false
+    suspend fun sessionAlive(): Boolean {
+        val profile = profileSnapshot() ?: return false
+        return try {
+            val alive = gms.isSessionAlive()
+            requireCurrent(profile)
+            alive
+        } catch (_: AppError.ReLoginRequired) {
+            false
+        }
     }
 
     /** 学期列表（`selected=true` 是当前学期） */
     suspend fun terms(): List<GmsClient.TermDto> {
-        requireSession()
-        return gms.fetchTerms()
+        val profile = requireSession()
+        val result = gms.fetchTerms()
+        requireCurrent(profile)
+        return result
     }
 
     /**
@@ -80,9 +117,11 @@ class GmsScheduleSource(
      * @param termCode 学期下拉里的 `value`（如 `20261`）
      */
     suspend fun weekEntries(termCode: String): List<GmsClient.WeekEntry> {
-        requireSession()
+        val profile = requireSession()
         val sessions = gms.fetchTermTable(termCode)
-        return gms.expandWeeks(sessions)
+        val result = gms.expandWeeks(sessions)
+        requireCurrent(profile)
+        return result
     }
 
     /**
@@ -97,8 +136,8 @@ class GmsScheduleSource(
      * 进而挑错周（2026-10-20 的第 7 周被判成第 8 周，怀疑与这类平移有关）。
      */
     suspend fun currentWeek(): List<GradLesson> {
-        requireSession()
-        return gms.fetchWeekTable().bzkb.flatMapIndexed { index, day ->
+        val profile = requireSession()
+        val result = gms.fetchWeekTable().bzkb.flatMapIndexed { index, day ->
             // zh 解析不出来才退回下标（保底：至少不会丢课）
             val weekday = weekdayOf(day.zh) ?: (index + 1).coerceIn(1, 7)
             day.bzkb.mapNotNull { l ->
@@ -112,6 +151,8 @@ class GmsScheduleSource(
                 )
             }
         }
+        requireCurrent(profile)
+        return result
     }
 
     /**
@@ -126,12 +167,18 @@ class GmsScheduleSource(
     }
 
     /** 没会话就直接给出"该去哪登录"的提示，别让上层拼文案 */
-    private fun requireSession() {
-        if (!hasSession()) {
+    private fun requireCurrent(profile: GmsProfileSnapshot) {
+        if (!profile.isCurrent()) throw AppError.ReLoginRequired("研究生会话已变更，请重新打开课表")
+    }
+
+    private fun requireSession(): GmsProfileSnapshot {
+        val profile = profileSnapshot()
+        if (profile == null || !hasSession()) {
             throw AppError.ReLoginRequired(
                 "研究生教务需要先登录一次：在课表页点「登录研究生系统」完成登录",
             )
         }
+        return profile
     }
 
     companion object {

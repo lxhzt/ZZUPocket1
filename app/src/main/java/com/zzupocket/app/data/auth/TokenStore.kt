@@ -4,6 +4,11 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import com.zzupocket.app.core.AppError
+import com.zzupocket.app.data.gms.GmsCookie
+import com.zzupocket.app.data.gms.GmsProfileIds
+import com.zzupocket.app.data.gms.GmsSessionStorage
+import com.zzupocket.app.data.gms.GmsStoredSession
 
 /**
  * 令牌存储。
@@ -14,7 +19,7 @@ import androidx.security.crypto.MasterKey
  * 文件名 `secure_prefs` 与 `res/xml/backup_rules.xml` / `data_extraction_rules.xml`
  * 里的排除项必须一致 —— 令牌不进任何备份。
  */
-class TokenStore(context: Context) {
+class TokenStore(context: Context) : GmsSessionStorage {
 
     private val prefs: SharedPreferences by lazy {
         val masterKey = MasterKey.Builder(context)
@@ -53,21 +58,53 @@ class TokenStore(context: Context) {
         get() = prefs.getLong(KEY_ECARD_AT, 0L)
         set(value) = prefs.edit().putLong(KEY_ECARD_AT, value).apply()
 
-    /**
-     * 研究生教务（gmsstu）的**会话 Cookie**（`k=v; k2=v2` 原样字符串）。
-     *
-     * 那个系统只认网页 CAS 会话 Cookie、没有 JWT 可用；登录在 App 内置 WebView 里完成
-     * （用户在学校自己的页面上输密码），我们只保存它落下的会话 Cookie —— 与
-     * 「只存令牌、不存密码」的底线一致。
-     */
-    var gmsCookie: String?
-        get() = prefs.getString(KEY_GMS_COOKIE, null)
-        set(value) = prefs.edit().putString(KEY_GMS_COOKIE, value).apply()
+    /** Only the documented GMS application cookie is retained, with its local import partition. */
+    @Synchronized
+    override fun restoreGmsSession(): GmsStoredSession? {
+        val parsed = GmsCookie.academicSessionOnly(GmsCookie.parse(prefs.getString(KEY_GMS_COOKIE, null)))
+        if (parsed.isEmpty()) {
+            clearGmsSession()
+            return null
+        }
+        val cookie = GmsCookie.join(parsed)
+        val savedId = prefs.getInt(KEY_GMS_PROFILE, GmsProfileIds.LEGACY)
+        val lastId = prefs.getInt(KEY_GMS_LAST_PROFILE, GmsProfileIds.LEGACY)
+        val loginAt = prefs.getLong(KEY_GMS_COOKIE_AT, 0L)
+        if (GmsProfileIds.isProfile(savedId)) {
+            check(lastId <= savedId) { "Local academic partition counter is inconsistent" }
+            persistGmsSession(cookie, savedId, lastId, loginAt)
+            return GmsStoredSession(cookie, savedId, loginAt)
+        }
+        // Old -10001 records have no verified owner: retain them but never assign them to this login.
+        return adoptGmsSession(cookie, loginAt)
+    }
 
-    /** 上次登录研究生系统的时间（毫秒；0 = 从没登录过）。登录状态卡片展示用 */
-    var gmsCookieAt: Long
+    @Synchronized
+    override fun adoptGmsSession(cookie: String, loginAt: Long): GmsStoredSession {
+        val parsed = GmsCookie.academicSessionOnly(GmsCookie.parse(cookie))
+        require(parsed.isNotEmpty()) { "Missing academic session" }
+        val id = GmsProfileIds.nextAfter(prefs.getInt(KEY_GMS_LAST_PROFILE, GmsProfileIds.LEGACY))
+        val sanitized = GmsCookie.join(parsed)
+        persistGmsSession(sanitized, id, id, loginAt)
+        return GmsStoredSession(sanitized, id, loginAt)
+    }
+
+    private fun persistGmsSession(cookie: String, id: Int, lastId: Int, loginAt: Long) {
+        if (!prefs.edit().putString(KEY_GMS_COOKIE, cookie).putInt(KEY_GMS_PROFILE, id)
+                .putInt(KEY_GMS_LAST_PROFILE, lastId).putLong(KEY_GMS_COOKIE_AT, loginAt).commit()) {
+            throw AppError.SecurityRestriction("无法安全保存研究生登录，请检查设备存储后重试。")
+        }
+    }
+
+    @Synchronized
+    override fun clearGmsSession() {
+        if (!prefs.edit().remove(KEY_GMS_COOKIE).remove(KEY_GMS_PROFILE).remove(KEY_GMS_COOKIE_AT).commit()) {
+            throw AppError.SecurityRestriction("无法清除研究生登录，请检查设备存储。")
+        }
+    }
+
+    val gmsCookieAt: Long
         get() = prefs.getLong(KEY_GMS_COOKIE_AT, 0L)
-        set(value) = prefs.edit().putLong(KEY_GMS_COOKIE_AT, value).apply()
 
     /** 上次登录成功的时间，用于诊断页展示 */
     var lastLoginAt: Long
@@ -79,9 +116,15 @@ class TokenStore(context: Context) {
         get() = prefs.getString("bound_account", null)
         set(value) = prefs.edit().putString("bound_account", value).apply()
 
+    @Synchronized
     fun clearAll() {
         val binding = boundAccount
-        prefs.edit().clear().putString("bound_account", binding).apply()
+        val lastProfile = prefs.getInt(KEY_GMS_LAST_PROFILE, GmsProfileIds.LEGACY)
+        // The allocation counter survives logout so an old database partition is never reused.
+        if (!prefs.edit().clear().putString("bound_account", binding)
+                .putInt(KEY_GMS_LAST_PROFILE, lastProfile).commit()) {
+            throw AppError.SecurityRestriction("无法清除登录，请检查设备存储。")
+        }
     }
 
     companion object {
@@ -93,6 +136,8 @@ class TokenStore(context: Context) {
         private const val KEY_ECARD_AT = "ecard_token_at"
         private const val KEY_GMS_COOKIE = "gms_cookie"
         private const val KEY_GMS_COOKIE_AT = "gms_cookie_at"
+        private const val KEY_GMS_PROFILE = "gms_profile_semester_id"
+        private const val KEY_GMS_LAST_PROFILE = "gms_last_profile_semester_id"
         private const val KEY_LAST_LOGIN = "last_login_at"
     }
 }
