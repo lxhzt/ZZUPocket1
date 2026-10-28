@@ -1,0 +1,38 @@
+name: Publish reviewed launch APK
+
+on:
+  push:
+    branches: [codex/launch-0.33.0-launch.1]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: zzupocket-launch-0.33.0-launch.1
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'lxhzt/ZZUPocket1' && github.ref == 'refs/heads/codex/launch-0.33.0-launch.1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Fetch publisher from the immutable triggering commit
+        env:
+          LAUNCH_SHA: ${{ github.sha }}
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, re, urllib.request
+          sha = os.environ['LAUNCH_SHA']
+          assert re.fullmatch('[a-f0-9]{40}', sha)
+          url = 'https://raw.githubusercontent.com/lxhzt/ZZUPocket1/' + sha + '/tools/publish-launch-release.py'
+          with urllib.request.urlopen(url, timeout=60) as response:
+              source = response.read(65537)
+          assert len(source) <= 65536
+          pathlib.Path('publish-launch-release.py').write_bytes(source)
+          PY
+      - name: Verify and publish the already signed APK
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 publish-launch-release.py

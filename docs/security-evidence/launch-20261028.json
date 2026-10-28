@@ -1,0 +1,63 @@
+{
+  "date": "2026-10-28",
+  "version_name": "0.33.0-launch.1",
+  "version_code": 90,
+  "package": "com.zzupocket.app.secure",
+  "min_sdk": 31,
+  "target_sdk": 36,
+  "apk_name": "ZZUPocket-0.33.0-launch.1.apk",
+  "apk_bytes": 6188552,
+  "apk_sha256": "6cd3aef1ea68545d1c0d322cfd7ac8b00405a49899d1afeb1467d5274b0db92b",
+  "certificate_sha256": "31dfa0fb3fdd9e1af313d9cbd2614a90c90d8248af024cff7e9026cbe44e0926",
+  "signature_v2_verified": true,
+  "signature_v3_verified": true,
+  "zip_alignment_verified": true,
+  "debuggable": false,
+  "backup_enabled": false,
+  "cleartext_enabled": false,
+  "launcher_label": "ZZUPocket \u5b89\u5168\u6d4b\u8bd5\u7248",
+  "lab_components_in_release": false,
+  "android_runtime_assertions_executed": 0,
+  "school_authenticated_tests": 0,
+  "funds_isolation_server_side_proved": false,
+  "prerelease": true,
+  "signing_material_uploaded": false,
+  "publication_prepared_on": "2026-10-29",
+  "unit_test_results": {
+    "testDebugUnitTest": {
+      "suites": 40,
+      "tests": 367,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "testSecurityLabUnitTest": {
+      "suites": 41,
+      "tests": 376,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "static_guard_checks": 23,
+  "local_guard_fixture_cases": 99,
+  "lint": {
+    "errors": 0,
+    "fatal": 0,
+    "warnings": 127,
+    "information": 6
+  },
+  "source_sha256": {
+    "app/build.gradle.kts": "ded5ad98e8034f07b506c4bb2a244a121f4d58cb070215d029e71b44bb4c1977",
+    "app/src/main/java/com/zzupocket/app/ui/about/AboutScreen.kt": "90eb51d9c2f3521a5913c1fd9309cdfc659c7896840711bc9253784cefe9f5e0",
+    "app/src/main/res/values/strings.xml": "ee04023d7c33697bff6fc05bc704f92e415856083cd71298237b0cb0557523ab",
+    "app/src/main/java/com/zzupocket/app/core/security/SecurityPolicy.kt": "527e27c9ff44844df1ba2b5ed23a2f1fe4ef11f28225e7d92d578f53f0acaa81",
+    "app/src/main/java/com/zzupocket/app/core/security/SchoolNetworkPolicy.kt": "064c0d11fa1f2e597fcad86f4beae8b51009b0e865034f4d89a6ee72dc4f7a48",
+    "app/src/main/java/com/zzupocket/app/core/security/SchoolRequestPolicy.kt": "c44c86640b2a957f08ecccd00a9db8828885226409f71dce9b46e5b4c20aa855",
+    "tools/sign-launch-apk.py": "b674bbe3bd8ffd8016419c4fce5cda998c52c9afc524cf86300efb559cd0dba2",
+    "tools/publish-launch-release.py": "0244dcf53b0bcd05443c8e8f3af401adb6e0243739f8e05bd399323ecc78e98c",
+    ".github/workflows/launch-release.yml": "2c5ad7790a4b82395872be362dff1433632af4bb92f4a4d181415261d6d09bc6"
+  },
+  "source_hash_encoding": "UTF-8 with LF newlines",
+  "git_blob_sha1": "31b06b85dad186f283abde2990c08e980c030dc2"
+}

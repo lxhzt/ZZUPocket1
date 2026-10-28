@@ -21,3 +21,6 @@ app/schemas/
 upstream.zip
 .gradle-local/
 local.properties
+__pycache__/
+*.pyc
+/dist/

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ZZUPocket</string>
+    <string name="app_name">ZZUPocket 安全测试版</string>
 
     <!-- ── 桌面小组件 ──────────────────────────────────────────────────────
          name = 选择页里显示的名字；desc = 名字下面那行说明。

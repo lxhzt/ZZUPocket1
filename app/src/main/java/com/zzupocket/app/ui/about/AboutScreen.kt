@@ -25,8 +25,8 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import com.zzupocket.app.BuildConfig
 
-/** ⚠️ 发布前把这里改成你自己的仓库地址 */
-private const val REPO_URL = "https://github.com/3beuml/ZZUPocket"
+/** Distribution and security notes for this fork; upstream author credit is retained below. */
+private const val REPO_URL = "https://github.com/lxhzt/ZZUPocket1"
 
 /** 作者主页 */
 private const val AUTHOR_URL = "https://github.com/3beuml"
@@ -71,8 +71,8 @@ fun AboutScreen(onBack: () -> Unit) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text("ZZUPocket", style = MaterialTheme.typography.titleMedium)
                     Text(
-                        text = "把学校分散的网页系统（课表、教室占用、电费、校园卡、图书馆座位）" +
-                            "整理成一个原生 Android App。",
+                        text = "课表与教室查询的 Android 应用。当前为安全整改测试版，" +
+                            "校园卡、电费和图书馆连接已暂停。",
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
@@ -82,14 +82,14 @@ fun AboutScreen(onBack: () -> Unit) {
                 Bullet("不保存你的密码。登录只走学校统一身份认证，本机仅保存加密后的登录令牌。")
                 Bullet("课表、专注记录、电费采样等数据只存在本机数据库，没有自建服务器，也不会上传。")
                 Bullet("退出登录会清除本机令牌；卸载 App 会一并清掉所有本地数据。")
-                Bullet("只读接口：不做电费充值、不做校园卡转账、不做自动抢座。")
+                Bullet("校园卡、电费及相关账户接口已断开，历史数据仅供离线查看。")
+                Bullet("学校统一凭据的权限范围仍在核实，本测试版尚未完成资金安全验收。")
             }
 
             AboutCard("数据从哪来") {
                 Bullet("课表 / 教室占用：教务系统（按真实日期匹配，调休调课也能对上）。")
-                Bullet("电费：一卡通平台。学校不提供历史用电量接口，所以历史曲线由本机定时采样推算。")
-                Bullet("校园卡：一卡通平台消费流水（本地留存，只增不改）。")
-                Bullet("图书馆座位：内嵌学校原版网页。")
+                Bullet("电费与校园卡：原实现来自一卡通平台，当前已暂停连接和采样。")
+                Bullet("图书馆座位：当前已暂停连接。")
             }
 
             AboutCard("开源与致谢") {
