@@ -240,6 +240,13 @@ private const val DIAG_JS = """
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun LibraryScreen(onBack: () -> Unit) {
+    if (!com.zzupocket.app.core.security.SecurityPolicy.LIBRARY_ENABLED) {
+        Column(Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Text(com.zzupocket.app.core.security.SecurityPolicy.LIBRARY_PAUSED)
+            Button(onClick = onBack) { Text("返回") }
+        }
+        return
+    }
     var webView by remember { mutableStateOf<WebView?>(null) }
     var progress by remember { mutableIntStateOf(0) }
     var error by remember { mutableStateOf<String?>(null) }

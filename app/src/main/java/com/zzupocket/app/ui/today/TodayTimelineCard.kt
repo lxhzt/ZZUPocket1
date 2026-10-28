@@ -1,4 +1,4 @@
-﻿package com.zzupocket.app.ui.today
+package com.zzupocket.app.ui.today
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,7 +39,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.zzupocket.app.core.AppGraph
 import com.zzupocket.app.core.ScheduleText
+import com.zzupocket.app.core.security.runAcademicRead
 import com.zzupocket.app.data.repo.ScheduleRepository
+import com.zzupocket.app.data.gms.GmsProfileSnapshot
 import com.zzupocket.app.domain.FocusStats
 import com.zzupocket.app.domain.Phase
 import com.zzupocket.app.domain.PlanColor
@@ -47,6 +49,10 @@ import com.zzupocket.app.domain.Session
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.ensureActive
+import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
@@ -80,16 +86,34 @@ class TodayTimelineViewModel : ViewModel() {
     private val _state = MutableStateFlow(TodayTimelineUi())
     val state: StateFlow<TodayTimelineUi> = _state.asStateFlow()
 
+    private var reloadJob: Job? = null
+
     init {
-        viewModelScope.launch { load() }
+        viewModelScope.launch {
+            AppGraph.gmsScheduleSource.profileChanges.collectLatest { profile ->
+                reloadJob?.cancel()
+                AppGraph.gmsScheduleSource.withCurrentProfile(profile) { _state.value = TodayTimelineUi() }
+                loadSafely(profile)
+            }
+        }
     }
 
     /** 从课表/专注页切回来时调用 —— 时间轴是会变的 */
     fun reload() {
-        viewModelScope.launch { load() }
+        reloadJob?.cancel()
+        val profile = AppGraph.gmsScheduleSource.profileSnapshot()
+        reloadJob = viewModelScope.launch { loadSafely(profile) }
     }
 
-    private suspend fun load() {
+    private suspend fun loadSafely(profile: GmsProfileSnapshot?) = runAcademicRead(
+        onFailure = {
+            AppGraph.gmsScheduleSource.withCurrentProfile(profile) {
+                _state.value = TodayTimelineUi(loaded = true)
+            }
+        },
+    ) { load(profile) }
+
+    private suspend fun load(profile: GmsProfileSnapshot?) {
         val now = System.currentTimeMillis()
         val nowMin = LocalTime.now().let { it.hour * 60 + it.minute }
         val today = LocalDate.now()
@@ -97,7 +121,7 @@ class TodayTimelineViewModel : ViewModel() {
         // 本科 + 研究生统一口径：研究生账号没有学期行，也要能看到今天的课
         val sessions = runCatching {
             com.zzupocket.app.data.repo.TodayTimetable
-                .sessionsOn(scheduleRepo, AppGraph.uiPrefsStore, today)
+                .sessionsOn(scheduleRepo, AppGraph.uiPrefsStore, today, profile)
         }.getOrDefault(emptyList())
         val periods = scheduleRepo.periods()
 
@@ -124,9 +148,12 @@ class TodayTimelineViewModel : ViewModel() {
             .filter { it.endMin > it.startMin }
             .sortedBy { it.startMin }
 
-        _state.value = TodayTimelineUi(
+        val week = com.zzupocket.app.data.repo.TodayTimetable
+            .currentWeekAt(scheduleRepo, AppGraph.uiPrefsStore, today, profile)
+        coroutineContext.ensureActive()
+        val updated = TodayTimelineUi(
             loaded = true,
-            week = com.zzupocket.app.data.repo.TodayTimetable.currentWeekAt(scheduleRepo, AppGraph.uiPrefsStore, today),
+            week = week,
             dateText = DATE_FMT.format(today),
             // 只画**真实发生的事**：课 / 自己加的日程 / 已完成的专注。
             //
@@ -142,6 +169,7 @@ class TodayTimelineViewModel : ViewModel() {
             nextHint = nextHint(courseEntries, nowMin),
             customEntries = customEntries,
         )
+        AppGraph.gmsScheduleSource.withCurrentProfile(profile) { _state.value = updated }
     }
 
     private fun courseEntry(

@@ -50,6 +50,7 @@ object GmsScheduleParser {
      * 格式不符（无 [] 段）返回 null。
      */
     fun parseCell(raw: String?): CellEntry? {
+        if (raw != null && raw.length > 8192) return null
         var text = raw?.trim().orEmpty()
         if (text.isEmpty()) return null
         val selective = text.contains("##")
@@ -110,14 +111,14 @@ object GmsScheduleParser {
      * 暂只按整段解析，宁可保守只返回能确定的部分。
      */
     fun parseWeeks(raw: String?): List<IntRange>? {
-        if (raw == null) return null
+        if (raw == null || raw.length > 1024) return null
         val s = raw.replace(" ", "")
         if (s.isEmpty()) return null
         val out = mutableListOf<IntRange>()
         Regex("(\\d+)(?:-(\\d+))?周").findAll(s).forEach { m ->
-            val a = m.groupValues[1].toInt()
-            val b = m.groupValues[2]
-            out.add(if (b.isEmpty()) a..a else a..b.toInt())
+            val a = m.groupValues[1].toIntOrNull() ?: return@forEach
+            val b = m.groupValues[2].let { if (it.isEmpty()) a else it.toIntOrNull() } ?: return@forEach
+            if (a in 1..60 && b in a..60 && out.size < 60) out.add(a..b)
         }
         return out.ifEmpty { null }
     }

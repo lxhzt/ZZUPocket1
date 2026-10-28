@@ -1,5 +1,7 @@
 package com.zzupocket.app.data.ecard
 
+import com.zzupocket.app.core.security.SecurityPolicy
+
 import android.util.Log
 import com.zzupocket.app.core.AppError
 import com.zzupocket.app.data.auth.AuthRepository
@@ -35,6 +37,7 @@ class EcardProbe(
 ) {
 
     suspend fun run(): String {
+        SecurityPolicy.requireDiagnostics()
         val sb = StringBuilder()
         sb.appendLine("=== 一卡通接口自检 v2 ===")
         sb.appendLine("时间：${LocalDate.now()}")

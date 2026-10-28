@@ -1,0 +1,84 @@
+"""Offline release guardrails. No network, credentials, subprocesses or file mutations."""
+from pathlib import Path
+import json
+import re
+import xml.etree.ElementTree as ET
+
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / 'app/src/main/java/com/zzupocket/app'
+ANDROID = '{http://schemas.android.com/apk/res/android}'
+results = []
+
+def check(name, condition):
+    results.append({'check': name, 'passed': bool(condition)})
+
+def text(path):
+    return (ROOT / path).read_text(encoding='utf-8-sig')
+
+policy = (SRC / 'core/security/SecurityPolicy.kt').read_text(encoding='utf-8')
+for flag in ['FINANCIAL_NETWORK_ENABLED', 'LIBRARY_ENABLED', 'NETWORK_DIAGNOSTICS_ENABLED']:
+    check(flag + ' disabled', bool(re.search(r'const val ' + flag + r'\s*=\s*false', policy)))
+manifest = ET.fromstring(text('app/src/main/AndroidManifest.xml'))
+app = manifest.find('application')
+check('backup disabled', app.get(ANDROID + 'allowBackup') == 'false')
+check('cleartext disabled in manifest', app.get(ANDROID + 'usesCleartextTraffic') == 'false')
+config = ET.fromstring(text('app/src/main/res/xml/network_security_config.xml'))
+check('no cleartext exceptions', all(n.get('cleartextTrafficPermitted') != 'true' for n in config.iter()))
+check('system certificate trust only', [n.get('src') for n in config.iter('certificates')] == ['system'])
+for name in ['backup_rules.xml', 'data_extraction_rules.xml']:
+    tree = ET.fromstring(text('app/src/main/res/xml/' + name))
+    groups = [tree] if tree.tag == 'full-backup-content' else list(tree)
+    check(name + ' excludes private files and WebView data', all(
+        {'root', 'file', 'database', 'sharedpref', 'external'} <=
+        {n.get('domain') for n in group.findall('exclude') if n.get('path') == '.'}
+        for group in groups))
+check('only launcher activity exported', all(
+    n.tag == 'activity' and n.get(ANDROID + 'name') == '.MainActivity'
+    for n in app if n.get(ANDROID + 'exported') == 'true'))
+permissions = {n.get(ANDROID + 'name') for n in manifest.findall('uses-permission')}
+check('no added sensitive device permissions', permissions <= {
+    'android.permission.INTERNET', 'android.permission.ACCESS_NETWORK_STATE', 'android.permission.HIDE_OVERLAY_WINDOWS',
+    'android.permission.POST_NOTIFICATIONS', 'android.permission.FOREGROUND_SERVICE',
+    'android.permission.FOREGROUND_SERVICE_SPECIAL_USE', 'android.permission.VIBRATE'})
+ecard = (SRC / 'data/ecard/EcardClient.kt').read_text(encoding='utf-8')
+check('all ecard request sites guarded', 'client.newCall(' not in ecard and
+      ecard.count('financialClient().newCall(') == 7 and 'SecurityPolicy.requireFinancialNetwork()' in ecard)
+gms = (SRC / 'data/gms/GmsClient.kt').read_text(encoding='utf-8')
+check('native GMS redirects disabled and policy installed', '.followRedirects(false)' in gms and
+      '.followSslRedirects(false)' in gms and '.addInterceptor(SchoolNetworkInterceptor(SchoolService.GMS))' in gms)
+check('release has no debug signing fallback', 'signingConfig = signingConfigs.getByName("debug")' not in text('app/build.gradle.kts'))
+check('fork has separate application data', 'applicationId = "com.zzupocket.app.secure"' in text('app/build.gradle.kts'))
+check('Gradle distribution integrity pinned', bool(re.search(r'^distributionSha256Sum=[a-f0-9]{64}$',
+      text('gradle/wrapper/gradle-wrapper.properties'), re.M)))
+check('no SSL error bypass or native JS bridge', all('handler.proceed(' not in p.read_text(encoding='utf-8-sig') and
+      'addJavascriptInterface(' not in p.read_text(encoding='utf-8-sig') for p in SRC.rglob('*.kt')))
+http = (SRC / 'core/net/HttpClients.kt').read_text(encoding='utf-8')
+check('each native factory has an explicit capability profile', all(
+    'builder(SchoolService.' + service in http for service in ['CAS', 'EAS', 'FINANCE_DISABLED']) and
+    'SchoolNetworkInterceptor(SchoolService.GMS)' in gms)
+auth = (SRC / 'data/auth/AuthRepository.kt').read_text(encoding='utf-8')
+check('unused CAS refresh credential is not persisted', 'store.casRefreshToken = result.refreshToken' not in auth and
+      'store.casRefreshToken = null' in auth)
+activity = (SRC / 'MainActivity.kt').read_text(encoding='utf-8')
+check('overlay hiding and obscured touch filtering enabled',
+      'android.permission.HIDE_OVERLAY_WINDOWS' in permissions and 'setHideOverlayWindows(true)' in activity and
+      'FLAG_WINDOW_IS_PARTIALLY_OBSCURED' in activity)
+eas = (SRC / 'data/eas/EasClient.kt').read_text(encoding='utf-8')
+check('general EAS diagnostic transport disabled',
+      'com.zzupocket.app.core.security.SecurityPolicy.requireDiagnostics()' in eas)
+verification_path = ROOT / 'gradle/verification-metadata.xml'
+verification_ok = False
+if verification_path.exists():
+    verification = ET.parse(verification_path).getroot()
+    artifacts = verification.findall('.//{*}artifact')
+    verification_ok = (
+        verification.findtext('.//{*}verify-metadata') == 'true' and bool(artifacts) and
+        not verification.findall('.//{*}trusted-artifacts/{*}trust') and
+        all(any(re.fullmatch(r'[a-f0-9]{64}', n.get('value', ''))
+                for n in artifact.findall('{*}sha256')) for artifact in artifacts)
+    )
+check('resolved dependency artifacts and metadata have SHA256 pins without broad exemptions', verification_ok)
+check('local verification workflow enforces strict dependency verification',
+      "'--dependency-verification', 'strict'" in text('tools/run-local-security.ps1'))
+print(json.dumps({'network_requests': 0, 'checks': results, 'passed': all(r['passed'] for r in results)}, indent=2))
+raise SystemExit(0 if all(r['passed'] for r in results) else 1)

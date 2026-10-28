@@ -1,5 +1,7 @@
 package com.zzupocket.app.ui.today
 
+import com.zzupocket.app.core.security.SecurityPolicy
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -86,14 +88,14 @@ class TodayCardViewModel : ViewModel() {
         val last = todayTx.maxByOrNull { it.ts }
 
         var loading = false
-        var note: String? = null
+        var note: String? = if (SecurityPolicy.FINANCIAL_NETWORK_ENABLED) null else SecurityPolicy.FINANCE_PAUSED
         // 冷启动时先把上次存下来的余额显示出来（离线也看得见），再去查新的
         val stored = runCatching { AppGraph.cardBalanceStore.latest() }.getOrNull()
         if (cachedBalance == null && stored != null) {
             cachedBalance = stored.yuan
             lastBalanceAt = stored.at
         }
-        if (loggedIn && now - lastBalanceAt > BALANCE_TTL_MS) {
+        if (SecurityPolicy.FINANCIAL_NETWORK_ENABLED && loggedIn && now - lastBalanceAt > BALANCE_TTL_MS) {
             loading = true
             _state.value = _state.value.copy(loading = true)
             runCatching { repo.balance() }

@@ -1,5 +1,7 @@
 package com.zzupocket.app.data.eas
 
+import com.zzupocket.app.core.net.readBoundedText
+
 import android.util.Log
 import com.zzupocket.app.core.AppError
 import com.zzupocket.app.core.ScheduleText
@@ -142,10 +144,10 @@ class EasClient(
     // ── API ──────────────────────────────────────────────────────────────
 
     suspend fun fetchSemesters(userToken: String): List<SemesterDto> =
-        getData(ALL_SEMESTERS_URL, userToken, "学期列表")
+        getData<List<SemesterDto>>(ALL_SEMESTERS_URL, userToken, "学期列表").filter { it.id >= 0 }
 
     suspend fun fetchCurrentSemester(userToken: String): SemesterDto? =
-        getData(CURRENT_SEMESTER_URL, userToken, "当前学期")
+        getData<SemesterDto>(CURRENT_SEMESTER_URL, userToken, "当前学期").takeIf { it.id >= 0 }
 
     /** 节次时刻表（作息）。有了它，"第 3 节"才知道是几点几分。 */
     suspend fun fetchPeriods(userToken: String): List<PeriodDto> =
@@ -165,6 +167,7 @@ class EasClient(
         usePost: Boolean = false,
         headerName: String = "Authorization",
     ): Pair<Int, String> = withContext(Dispatchers.IO) {
+        com.zzupocket.app.core.security.SecurityPolicy.requireDiagnostics()
         val url = if (pathOrUrl.startsWith("http")) pathOrUrl else "$JWXT$pathOrUrl"
         val builder = Request.Builder().url(url).header(headerName, userToken)
         if (usePost) {
@@ -179,7 +182,7 @@ class EasClient(
         } catch (e: IOException) {
             throw AppError.Network("无法连接教务系统", e)
         }
-        response.use { it.code to it.body?.string().orEmpty() }
+        response.use { it.code to it.body.readBoundedText() }
     }
 
     /**
@@ -395,7 +398,7 @@ class EasClient(
             throw AppError.Network("无法连接教务系统，请检查网络", e)
         }
         response.use {
-            val text = it.body?.string().orEmpty()
+            val text = it.body.readBoundedText()
             authRejectOf(it.code, "教室占用")?.let { err ->
                 Log.w(TAG_AUTH, "教务拒绝：HTTP ${it.code} /room/place/rooms（响应体 ${text.length} 字节）")
                 throw rejectExplained(it.code, "教室占用", userToken, err)
@@ -501,7 +504,7 @@ class EasClient(
         }
 
         response.use {
-            val text = it.body?.string().orEmpty()
+            val text = it.body.readBoundedText()
             // 教务网关拒绝时响应体是**空的**（实测：不带鉴权/裸令牌/Bearer/cookie/X-Id-Token
             // 五种写法一律 401 + content-length 0），所以这里只留状态码与路径供 logcat 取证。
             authRejectOf(it.code, what)?.let { err ->

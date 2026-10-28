@@ -1,6 +1,8 @@
-﻿package com.zzupocket.app.ui.widget
+package com.zzupocket.app.ui.widget
 
 import com.zzupocket.app.core.AppGraph
+import com.zzupocket.app.data.gms.GmsProfileSnapshot
+import kotlinx.coroutines.CancellationException
 import com.zzupocket.app.data.prefs.UiPrefs
 import com.zzupocket.app.data.repo.ElectricityRepository
 import com.zzupocket.app.domain.EnergySample
@@ -32,6 +34,7 @@ data class WidgetScheduleBundle(
     val nowMin: Int,
     /** 下一个上下课时间点（毫秒时间戳），用来定"该变的时候变一次"的闹钟 */
     val nextBoundaryMillis: Long?,
+    internal val profile: GmsProfileSnapshot? = null,
 ) {
     /** 4×2 课表：左列今天、右列明天 */
     fun twoDayPlan(maxRows: Int): WidgetTwoDayPlan = WidgetSchedule.twoDayPlan(
@@ -114,6 +117,7 @@ object WidgetData {
         .getOrDefault(UiPrefs())
 
     suspend fun loadSchedule(): WidgetScheduleBundle {
+        val profile = AppGraph.gmsScheduleSource.profileSnapshot()
         val repo = AppGraph.scheduleRepository
         val prefsStore = AppGraph.uiPrefsStore
         val today = LocalDate.now()
@@ -123,20 +127,23 @@ object WidgetData {
 
         // 本科 + 研究生统一口径（研究生账号没有学期行，也照样能取到今天/明天的课）
         val hasSchedule = com.zzupocket.app.data.repo.TodayTimetable
-            .hasAnySchedule(repo, prefsStore)
+            .hasAnySchedule(repo, prefsStore, profile)
         val periods = repo.periods()
-        val week = com.zzupocket.app.data.repo.TodayTimetable.currentWeekAt(repo, prefsStore, today)
+        val week = com.zzupocket.app.data.repo.TodayTimetable.currentWeekAt(repo, prefsStore, today, profile)
 
         val todayCourses = com.zzupocket.app.data.repo.TodayTimetable
-            .sessionsOn(repo, prefsStore, today)
+            .sessionsOn(repo, prefsStore, today, profile)
             .mapNotNull { WidgetSchedule.toCourse(it, periods) }
             .sortedBy { it.startMin }
 
         val tomorrowCourses = com.zzupocket.app.data.repo.TodayTimetable
-            .sessionsOn(repo, prefsStore, tomorrow)
+            .sessionsOn(repo, prefsStore, tomorrow, profile)
             .mapNotNull { WidgetSchedule.toCourse(it, periods) }
             .sortedBy { it.startMin }
 
+        if (!AppGraph.gmsScheduleSource.withCurrentProfile(profile) { }) {
+            throw CancellationException("Academic profile changed during widget read")
+        }
         return WidgetScheduleBundle(
             hasSchedule = hasSchedule,
             week = week,
@@ -146,6 +153,21 @@ object WidgetData {
             tomorrow = tomorrowCourses,
             nowMin = nowMin,
             nextBoundaryMillis = WidgetSchedule.nextBoundaryMillis(todayCourses, nowMin, nowMillis),
+            profile = profile,
+        )
+    }
+
+    /** Short synchronous publication shares the source lock with profile replacement/logout. */
+    fun withCurrentSchedule(schedule: WidgetScheduleBundle, action: () -> Unit): Boolean =
+        AppGraph.gmsScheduleSource.withCurrentProfile(schedule.profile, action)
+
+    /** Revoke already published graduate content before asynchronously reading a new profile. */
+    fun emptySchedule(): WidgetScheduleBundle {
+        val today = LocalDate.now()
+        return WidgetScheduleBundle(
+            hasSchedule = false, week = null, todayDate = today, tomorrowDate = today.plusDays(1),
+            today = emptyList(), tomorrow = emptyList(), nowMin = 0, nextBoundaryMillis = null,
+            profile = AppGraph.gmsScheduleSource.profileSnapshot(),
         )
     }
 

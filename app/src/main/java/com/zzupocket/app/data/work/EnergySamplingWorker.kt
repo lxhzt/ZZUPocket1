@@ -1,5 +1,7 @@
 package com.zzupocket.app.data.work
 
+import com.zzupocket.app.core.security.SecurityPolicy
+
 import android.content.Context
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
@@ -30,6 +32,7 @@ class EnergySamplingWorker(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
+        if (!SecurityPolicy.FINANCIAL_NETWORK_ENABLED) return Result.success()
         if (!AppGraph.authRepository.isLoggedIn()) return Result.success()
         val (lightRoom, acRoom) = AppGraph.electricityRepository.effectiveRooms()
         // 用户还没设置自己的宿舍房间就别采了（早期版本会回落到开发者自己的房间号）
@@ -52,6 +55,10 @@ class EnergySamplingWorker(
 
         /** 幂等：已经排过就保持原样，不会重复排 */
         fun schedule(context: Context) {
+            if (!SecurityPolicy.FINANCIAL_NETWORK_ENABLED) {
+                cancel(context)
+                return
+            }
             val request = PeriodicWorkRequestBuilder<EnergySamplingWorker>(
                 4, TimeUnit.HOURS,
             )

@@ -264,16 +264,18 @@ class DiagnosticsViewModel : ViewModel() {
     /**
      * 采用 WebView 登录后的会话（与课表页同一套逻辑）。
      *
-     * 从 WebView 的 CookieManager 取会话 → 交给数据源落盘。密码始终输在学校页面上，我们不接触。
+     * 从 WebView 的 CookieManager 取会话 → 交给数据源落盘。
+     * 学校页面仍运行在本 App 的 WebView 内；原生代码不读取或保存其中输入的密码。
      * @param onDone 回调结果（true = 真的拿到了会话）
      */
     fun adoptGmsSession(onDone: (Boolean) -> Unit = {}) {
+        // Capture before closing: dialog disposal retires all browser CAS/GMS cookies.
+        val cookie = runCatching {
+            android.webkit.CookieManager.getInstance()
+                .getCookie(com.zzupocket.app.data.gms.GmsScheduleSource.COOKIE_URL)
+        }.getOrNull()
         _state.update { it.copy(gmsDialogOpen = false, gmsError = "") }
         viewModelScope.launch {
-            val cookie = runCatching {
-                android.webkit.CookieManager.getInstance()
-                    .getCookie(com.zzupocket.app.data.gms.GmsScheduleSource.COOKIE_URL)
-            }.getOrNull()
             val ok = AppGraph.gmsScheduleSource.onWebViewLogin(cookie)
             refreshGmsState()
             if (!ok) {
@@ -307,6 +309,7 @@ class DiagnosticsViewModel : ViewModel() {
 
     /** 只退出研究生教务会话，不动统一认证登录 */
     fun logoutGms() {
+        com.zzupocket.app.core.security.WebSessionCleaner.clear()
         AppGraph.gmsScheduleSource.clear()
         refreshGmsState()
     }
@@ -325,16 +328,7 @@ class DiagnosticsViewModel : ViewModel() {
         // ⚠️ 统一认证退出时，研究生教务的会话必须一起清 ——
         // 否则会出现"已经退出登录、但研究生课表还能看"的怪状态。
         runCatching { AppGraph.gmsScheduleSource.clear() }
-        // 研究生课表缓存也一起清：它是按账号抓的，退出后不该留在设备上
-        // （本科课表随学期走、且与账号绑定方式不同，不在此处处理）
-        viewModelScope.launch {
-            runCatching {
-                AppGraph.scheduleRepository.clearTimetable(
-                    source = com.zzupocket.app.data.gms.GmsScheduleSource.SOURCE,
-                    semesterId = com.zzupocket.app.data.gms.GmsScheduleMapper.GRAD_SEMESTER_ID,
-                )
-            }
-        }
+        // Imported histories stay in inactive partitions; logout never deletes business data.
         auth.logout()
         onDone()
     }
@@ -407,7 +401,7 @@ fun DiagnosticsScreen(
                         style = MaterialTheme.typography.bodySmall,
                     )
                     Text(
-                        "登录后在统一认证「安全中心」把这个设备设为可信设备，以后就不再需要短信验证码。",
+                        "设备信任与短信验证由学校统一认证管理，请按学校要求完成验证。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

@@ -1,5 +1,7 @@
 package com.zzupocket.app.data.eas
 
+import com.zzupocket.app.core.net.readBoundedText
+
 import com.zzupocket.app.domain.AcademicTrack
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -41,7 +43,7 @@ object UndergradIdentityProbe {
             .get()
             .build()
         val (status, body) = try {
-            client.newCall(request).execute().use { r -> r.code to r.body?.string().orEmpty() }
+            client.newCall(request).execute().use { r -> r.code to r.body.readBoundedText() }
         } catch (e: Throwable) {
             0 to ""
         }

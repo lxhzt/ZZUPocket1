@@ -1,0 +1,638 @@
+{
+  "date": "2026-10-28",
+  "started_date": "2026-10-27",
+  "base_commit": "9a0fdd6db0afa616a1b660e9d7c21e0f1dd4c47b",
+  "build_logs_sha256": {
+    "auth-audit-build-20261027.log": "00667f0412e4cb2bc3a35e0813b7425eba547aaf2939a906d030c1eaef4a8cf5",
+    "auth-audit-verified-20261027.log": "34f6d532c86e48c99064f53720b52f11ee054aa0cc6741cc873772a4dc20f484"
+  },
+  "final_build_command": "gradlew.bat testDebugUnitTest assembleDebug lintDebug assembleRelease --dependency-verification strict --offline --console=plain --no-daemon --max-workers=1 -Pkotlin.compiler.execution.strategy=in-process -Dorg.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8",
+  "tests": {
+    "tests": 367,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suite_count": 40,
+  "new_suites": [
+    {
+      "name": "com.zzupocket.app.security.AcademicNamespaceTest",
+      "tests": "1",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-10-27T10:15:39",
+      "time": "0.1",
+      "cases": [
+        {
+          "name": "academic responses cannot allocate a graduate cache namespace",
+          "seconds": "0.1"
+        }
+      ]
+    },
+    {
+      "name": "com.zzupocket.app.security.AcademicReadRecoveryTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-10-27T10:15:39",
+      "time": "0.143",
+      "cases": [
+        {
+          "name": "cancellation is propagated without publishing fallback UI",
+          "seconds": "0.003"
+        },
+        {
+          "name": "late failure from a replaced profile cannot clear the new profile UI",
+          "seconds": "0.025"
+        },
+        {
+          "name": "read error permits retry and later login and logout still revoke academic UI",
+          "seconds": "0.114"
+        }
+      ]
+    },
+    {
+      "name": "com.zzupocket.app.security.GmsProfilePartitionTest",
+      "tests": "8",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-10-27T10:15:42",
+      "time": "0.237",
+      "cases": [
+        {
+          "name": "partition allocator never reuses legacy or wraps on exhaustion",
+          "seconds": "0.01"
+        },
+        {
+          "name": "publication accepts only the exact active snapshot including the logged-out null state",
+          "seconds": "0.007"
+        },
+        {
+          "name": "same academic content in different logins has disjoint session and course keys",
+          "seconds": "0.001"
+        },
+        {
+          "name": "an in-flight academic result cannot be returned under a subsequent login",
+          "seconds": "0.084"
+        },
+        {
+          "name": "switching the rendered partition revokes old graduate lessons and course detail",
+          "seconds": "0.022"
+        },
+        {
+          "name": "logout waits for a synchronous publication then revokes subsequent old publications",
+          "seconds": "0.108"
+        },
+        {
+          "name": "restart restores its saved partition and malformed cookies cannot replace it",
+          "seconds": "0.003"
+        },
+        {
+          "name": "each web login gets a new partition even with identical cookies and logout preserves allocation",
+          "seconds": "0.002"
+        }
+      ]
+    },
+    {
+      "name": "com.zzupocket.app.security.LocalAdversarialTest",
+      "tests": "8",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-10-27T10:15:42",
+      "time": "0.457",
+      "cases": [
+        {
+          "name": "lying and unbounded bodies stop near the limit and always close",
+          "seconds": "0.006"
+        },
+        {
+          "name": "mixed concurrent traffic preserves capability separation across 24000 calls",
+          "seconds": "0.231"
+        },
+        {
+          "name": "destination canonicalization corpus cannot escape academic capability",
+          "seconds": "0.041"
+        },
+        {
+          "name": "compressed response expansion obeys the default four MiB decoded limit",
+          "seconds": "0.109"
+        },
+        {
+          "name": "cookie value limits path boundaries replacement and expiry survive hostile updates",
+          "seconds": "0.001"
+        },
+        {
+          "name": "response cookie churn stays capped and does not poison other origins",
+          "seconds": "0.048"
+        },
+        {
+          "name": "GMS rejects noncanonical encoded routes and unauthorized module variants",
+          "seconds": "0.002"
+        },
+        {
+          "name": "escaped quote and bracket corpus cannot bypass JSON nesting bound",
+          "seconds": "0.019"
+        }
+      ]
+    },
+    {
+      "name": "com.zzupocket.app.security.SessionBoundaryTest",
+      "tests": "6",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-10-27T10:15:43",
+      "time": "0.011",
+      "cases": [
+        {
+          "name": "missing or malformed academic session never falls back to SSO cookies",
+          "seconds": "0.001"
+        },
+        {
+          "name": "logout prevents a late response from reviving the cookie jar",
+          "seconds": "0.0"
+        },
+        {
+          "name": "production GMS client rejects a result that returns after logout",
+          "seconds": "0.007"
+        },
+        {
+          "name": "oversized response cookie fields cannot replace accepted cookies",
+          "seconds": "0.001"
+        },
+        {
+          "name": "academic adoption excludes CAS and other cookies while preserving the documented session",
+          "seconds": "0.001"
+        },
+        {
+          "name": "late response from an earlier login cannot replace a newly adopted session",
+          "seconds": "0.001"
+        }
+      ]
+    },
+    {
+      "name": "com.zzupocket.app.security.TodayTimetableProfileTest",
+      "tests": "4",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-10-27T10:15:43",
+      "time": "0.069",
+      "cases": [
+        {
+          "name": "graduate result arriving after logout is discarded",
+          "seconds": "0.055"
+        },
+        {
+          "name": "active graduate cache reads use the captured namespace exclusively",
+          "seconds": "0.005"
+        },
+        {
+          "name": "missing profile does not read legacy graduate cache",
+          "seconds": "0.002"
+        },
+        {
+          "name": "revoked profile cannot start a graduate cache read",
+          "seconds": "0.006"
+        }
+      ]
+    }
+  ],
+  "static_checks": {
+    "network_requests": 0,
+    "checks": [
+      {
+        "check": "FINANCIAL_NETWORK_ENABLED disabled",
+        "passed": true
+      },
+      {
+        "check": "LIBRARY_ENABLED disabled",
+        "passed": true
+      },
+      {
+        "check": "NETWORK_DIAGNOSTICS_ENABLED disabled",
+        "passed": true
+      },
+      {
+        "check": "backup disabled",
+        "passed": true
+      },
+      {
+        "check": "cleartext disabled in manifest",
+        "passed": true
+      },
+      {
+        "check": "no cleartext exceptions",
+        "passed": true
+      },
+      {
+        "check": "system certificate trust only",
+        "passed": true
+      },
+      {
+        "check": "backup_rules.xml excludes private files and WebView data",
+        "passed": true
+      },
+      {
+        "check": "data_extraction_rules.xml excludes private files and WebView data",
+        "passed": true
+      },
+      {
+        "check": "only launcher activity exported",
+        "passed": true
+      },
+      {
+        "check": "no added sensitive device permissions",
+        "passed": true
+      },
+      {
+        "check": "all ecard request sites guarded",
+        "passed": true
+      },
+      {
+        "check": "native GMS redirects disabled and policy installed",
+        "passed": true
+      },
+      {
+        "check": "release has no debug signing fallback",
+        "passed": true
+      },
+      {
+        "check": "fork has separate application data",
+        "passed": true
+      },
+      {
+        "check": "Gradle distribution integrity pinned",
+        "passed": true
+      },
+      {
+        "check": "no SSL error bypass or native JS bridge",
+        "passed": true
+      },
+      {
+        "check": "each native factory has an explicit capability profile",
+        "passed": true
+      },
+      {
+        "check": "unused CAS refresh credential is not persisted",
+        "passed": true
+      },
+      {
+        "check": "overlay hiding and obscured touch filtering enabled",
+        "passed": true
+      },
+      {
+        "check": "general EAS diagnostic transport disabled",
+        "passed": true
+      },
+      {
+        "check": "resolved dependency artifacts and metadata have SHA256 pins without broad exemptions",
+        "passed": true
+      },
+      {
+        "check": "local verification workflow enforces strict dependency verification",
+        "passed": true
+      }
+    ],
+    "passed": true
+  },
+  "lint": {
+    "Fatal": 0,
+    "Error": 0,
+    "Warning": 127,
+    "Information": 6
+  },
+  "dependency_verification": {
+    "sha256": "bfefa82791e099a9d1c0f0a5f05ca62de0eaa3d494dda62871c23c2c3835561a",
+    "bytes": 194268,
+    "components": 426,
+    "artifacts": 724,
+    "checksum_entries": 724,
+    "bootstrap": "current local cache; independent publisher provenance not fully verified",
+    "strict_full_build_passed": true
+  },
+  "verifier_positive_negative_fixture": {
+    "date": "2026-10-27",
+    "scope": "isolated synthetic local Maven fixture only",
+    "external_network_requests": 0,
+    "results": [
+      {
+        "case": "matching",
+        "exit_code": 0,
+        "checksum_rejected": false,
+        "log_sha256": "d2869294219b327d2a6a99180c083837175bb1a7d111a65f17909353059c8eae"
+      },
+      {
+        "case": "mismatch",
+        "exit_code": 1,
+        "checksum_rejected": true,
+        "log_sha256": "ec38c7331387f34dcad894ed46c0770e1af4c0e1348bec52ddb0e5121dd050c8"
+      }
+    ]
+  },
+  "runtime_dependency_osv": {
+    "database": "OSV",
+    "date": "2026-10-28",
+    "package_count": 95,
+    "findings": []
+  },
+  "release_apk": {
+    "date": "2026-10-28",
+    "package": "com.zzupocket.app.secure",
+    "release_debuggable": false,
+    "backup_enabled": false,
+    "cleartext_enabled": false,
+    "exported_components": [
+      {
+        "type": "activity",
+        "name": "com.zzupocket.app.MainActivity",
+        "permission": null
+      },
+      {
+        "type": "service",
+        "name": "androidx.work.impl.background.systemjob.SystemJobService",
+        "permission": "android.permission.BIND_JOB_SERVICE"
+      },
+      {
+        "type": "receiver",
+        "name": "androidx.work.impl.diagnostics.DiagnosticsReceiver",
+        "permission": "android.permission.DUMP"
+      },
+      {
+        "type": "receiver",
+        "name": "androidx.profileinstaller.ProfileInstallReceiver",
+        "permission": "android.permission.DUMP"
+      }
+    ],
+    "manifest_permissions": [
+      "package: com.zzupocket.app.secure",
+      "uses-permission: name='android.permission.INTERNET'",
+      "uses-permission: name='android.permission.HIDE_OVERLAY_WINDOWS'",
+      "uses-permission: name='android.permission.ACCESS_NETWORK_STATE'",
+      "uses-permission: name='android.permission.POST_NOTIFICATIONS'",
+      "uses-permission: name='android.permission.FOREGROUND_SERVICE'",
+      "uses-permission: name='android.permission.FOREGROUND_SERVICE_SPECIAL_USE'",
+      "uses-permission: name='android.permission.VIBRATE'",
+      "uses-permission: name='android.permission.WAKE_LOCK'",
+      "uses-permission: name='android.permission.RECEIVE_BOOT_COMPLETED'",
+      "permission: com.zzupocket.app.secure.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+      "uses-permission: name='com.zzupocket.app.secure.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'"
+    ],
+    "apk_sha256": "36589082f34e9d2135222f58594ba5b8ad2f175204664d710b4616a80410b46f",
+    "apk_bytes": 6178328,
+    "signing": "unsigned; owner-held production key required",
+    "runtime_device_tested": false,
+    "android_log_method_references": [
+      "getStackTraceString",
+      "isLoggable",
+      "println",
+      "wtf"
+    ],
+    "direct_verbose_debug_info_warn_error_log_references": false,
+    "compiled_network_config": [
+      "E: network-security-config (line=2)",
+      "  E: base-config (line=3)",
+      "    A: cleartextTrafficPermitted=(type 0x12)0x0",
+      "    E: trust-anchors (line=4)",
+      "      E: certificates (line=4)",
+      "        A: src=\"system\" (Raw: \"system\")"
+    ],
+    "signature_verification": {
+      "verified": false,
+      "expected_unsigned": true,
+      "exit_code": 1,
+      "diagnostic": "DOES NOT VERIFY\r\nERROR: Missing META-INF/MANIFEST.MF"
+    }
+  },
+  "source_git_blob_hashes": {
+    "app/build.gradle.kts": "ca47930c1412c5ffd876e67ec92860c4b412df19",
+    "app/src/main/AndroidManifest.xml": "ccea684e5557e02b35cb163614d9591c3764041d",
+    "app/src/main/assets/rooms.json": "90e1bad8853bba66c6f8768ff718797aac72abfd",
+    "app/src/main/java/com/zzupocket/app/MainActivity.kt": "22d2b86f68670c9f2177b02151a76d5276158389",
+    "app/src/main/java/com/zzupocket/app/ZZUPocketApp.kt": "c3826e2a2dc79ef7f87931654e68758f2ed51b7b",
+    "app/src/main/java/com/zzupocket/app/core/AppError.kt": "a49339adb4cad98d49851e2ed53007c904b84227",
+    "app/src/main/java/com/zzupocket/app/core/AppGraph.kt": "ac255d2189fbbc08ed49ca95123aa4ff86f17c4a",
+    "app/src/main/java/com/zzupocket/app/core/Enrollment.kt": "9e5f2c154a83cffe5e0609fb07ae705341f2b412",
+    "app/src/main/java/com/zzupocket/app/core/ErrorMessages.kt": "ff5587fe41e1c945d86fd568b058824517be3261",
+    "app/src/main/java/com/zzupocket/app/core/JsonStructure.kt": "e2f692c533d9bf7e2cc2eb61cd442a3ede0a33ca",
+    "app/src/main/java/com/zzupocket/app/core/LoginInput.kt": "f3bc6934ae40fdf35a1e84b0448e37831ae4b378",
+    "app/src/main/java/com/zzupocket/app/core/ScheduleText.kt": "7845825df6a2dc8e1e7bf87534336a1e8e6cc195",
+    "app/src/main/java/com/zzupocket/app/core/SyncPolicy.kt": "9e55403eab0211c0cfcfa4c2540b8ec2baa72043",
+    "app/src/main/java/com/zzupocket/app/core/WeekSettings.kt": "fe913675c05985e0e8a3004e25b477e0db3a8e5f",
+    "app/src/main/java/com/zzupocket/app/core/crypto/Crypto.kt": "d6da352ed7ee9843a89028887ea19a59e86b8eb8",
+    "app/src/main/java/com/zzupocket/app/core/net/BoundedBody.kt": "2ab80f73955113b614ea1a7c263fca21651e2780",
+    "app/src/main/java/com/zzupocket/app/core/net/HttpClients.kt": "45c0a81b841c94a06ae0c4defbb3a676cf4c70c0",
+    "app/src/main/java/com/zzupocket/app/core/security/AcademicRead.kt": "329b5f8a915cdfbfc5854150696a92e492d94c86",
+    "app/src/main/java/com/zzupocket/app/core/security/LimitedStreams.kt": "7f0a65499898eac7362978cad3a42b27c7fb030e",
+    "app/src/main/java/com/zzupocket/app/core/security/PendingLoginCredentials.kt": "bd66bc81d607f1be79fe9f0a7c1aff531a8122f9",
+    "app/src/main/java/com/zzupocket/app/core/security/SchoolNetworkPolicy.kt": "a4325f34eec1a62d12935535f632413525e08a8c",
+    "app/src/main/java/com/zzupocket/app/core/security/SchoolRequestPolicy.kt": "da67294b670301c7b2b249c3888762dfa264da8f",
+    "app/src/main/java/com/zzupocket/app/core/security/SecureWebView.kt": "3dc0f87656d672003eb5551ed3c6925c453c3329",
+    "app/src/main/java/com/zzupocket/app/core/security/SecurityPolicy.kt": "e16cd9b1b3b5068c50b3cec7bad5eebc648018fc",
+    "app/src/main/java/com/zzupocket/app/core/security/WebSessionCleaner.kt": "42036847564a3a851dd2a31a170cccdc0182b70a",
+    "app/src/main/java/com/zzupocket/app/data/auth/AuthRepository.kt": "a234580ea5c2c66965693ed069f283b1a222bb1c",
+    "app/src/main/java/com/zzupocket/app/data/auth/CasClient.kt": "28ee516210632d5cee6baa1495fcb36bb5f2fa07",
+    "app/src/main/java/com/zzupocket/app/data/auth/TokenStore.kt": "b7577cb73964a1818317f2253a0bf49a433a5d99",
+    "app/src/main/java/com/zzupocket/app/data/db/AppDatabase.kt": "533014433419bbbbf4d05bb045e83b77d8f6cb00",
+    "app/src/main/java/com/zzupocket/app/data/db/CardEntities.kt": "f12e5377f77fab4d6e1cfdb7baf59169db0febbb",
+    "app/src/main/java/com/zzupocket/app/data/db/FocusEntities.kt": "673b5004c0ce9d27b5230f1d0531d1d7f309780d",
+    "app/src/main/java/com/zzupocket/app/data/db/ScheduleEntities.kt": "7746b13f641cfd514e49d05a88e63c9629384b82",
+    "app/src/main/java/com/zzupocket/app/data/eas/EasAuthProbe.kt": "000e4b2348542b56abbf18cdd660ef7045414379",
+    "app/src/main/java/com/zzupocket/app/data/eas/EasClient.kt": "49a3276489cdcaa8fbf75860def1907eb5c3f493",
+    "app/src/main/java/com/zzupocket/app/data/eas/EasDiagnostics.kt": "a45c7abedee24304e4b436a77bccde2842739088",
+    "app/src/main/java/com/zzupocket/app/data/eas/RoomProbe.kt": "e15021e649e4c2db51f403221983461a6bb069d2",
+    "app/src/main/java/com/zzupocket/app/data/eas/UndergradIdentityProbe.kt": "edaa2ad4713c412e21d0c0a499e31596f90a43d7",
+    "app/src/main/java/com/zzupocket/app/data/ecard/EcardClient.kt": "798d1082ae24a109cb1bed2856ff2182879a4ac2",
+    "app/src/main/java/com/zzupocket/app/data/ecard/EcardProbe.kt": "175ba98a7308b8c0d1d11a097d5874b5d7b6455e",
+    "app/src/main/java/com/zzupocket/app/data/gms/GmsClient.kt": "cbaf25d01c08bc6f26aff685defbddd0e99cc476",
+    "app/src/main/java/com/zzupocket/app/data/gms/GmsCookie.kt": "63be50bbec7f3cb2a3f01dfb8a5250e9455a4504",
+    "app/src/main/java/com/zzupocket/app/data/gms/GmsProbe.kt": "be1865497c8d05f1086cb13eeb198c5c367baf46",
+    "app/src/main/java/com/zzupocket/app/data/gms/GmsProfileSnapshot.kt": "ac2bee664f9bc2ef3141702aa33b401480a736af",
+    "app/src/main/java/com/zzupocket/app/data/gms/GmsRedact.kt": "33adee3424f1bb8315a63224acb8aa8930fec072",
+    "app/src/main/java/com/zzupocket/app/data/gms/GmsScheduleMapper.kt": "0b51978305e4c21e3f3d2a0c25e4e847b4b630b0",
+    "app/src/main/java/com/zzupocket/app/data/gms/GmsScheduleParser.kt": "a7c0347544691d37a62c5d035a81b6e55b230a77",
+    "app/src/main/java/com/zzupocket/app/data/gms/GmsScheduleSource.kt": "0844210ea52cd20e0b351b7104a9c38a3d91e8ba",
+    "app/src/main/java/com/zzupocket/app/data/gms/GmsWeekAlign.kt": "05446d3667b2af572a927705a9eb14dbcbceb737",
+    "app/src/main/java/com/zzupocket/app/data/lib/LibProbe.kt": "a1b46f7f32dd86b37fc8a212402a258cf08f70a6",
+    "app/src/main/java/com/zzupocket/app/data/prefs/CardBalanceStore.kt": "70566a165b5c33753984dd3a847453559153eb51",
+    "app/src/main/java/com/zzupocket/app/data/prefs/FocusPrefsStore.kt": "30d800d88da03be66d776f4dcae087cb026ff1fd",
+    "app/src/main/java/com/zzupocket/app/data/prefs/LoginPrefsStore.kt": "da82e9f47dd58a7fd1a7c303c00fcc680c6e22c3",
+    "app/src/main/java/com/zzupocket/app/data/prefs/UiPrefsStore.kt": "b8479ffdfd196fdd7a1ccf11af5c77a419f01087",
+    "app/src/main/java/com/zzupocket/app/data/repo/CardRepository.kt": "77e59f3f34c295896173e697a717f61de080448a",
+    "app/src/main/java/com/zzupocket/app/data/repo/ElectricityRepository.kt": "74d96aa9b9b97bb9aa239ed908560d98142cdc4e",
+    "app/src/main/java/com/zzupocket/app/data/repo/FocusRepository.kt": "5c6edf7692ed160e35f3be27f78b5b140d3bcc4f",
+    "app/src/main/java/com/zzupocket/app/data/repo/RoomRepository.kt": "c1de2cbe8bb7e6c86f19e2a59404bd9cd11aa8b5",
+    "app/src/main/java/com/zzupocket/app/data/repo/ScheduleRepository.kt": "1e1c9ae42bcdd514df0525c6b785e9ca41597b73",
+    "app/src/main/java/com/zzupocket/app/data/repo/TodayTimetable.kt": "f5826f9939e1b490e9b0c0466bacb68f215e3af1",
+    "app/src/main/java/com/zzupocket/app/data/room/RoomCatalog.kt": "87f4c627c9ef6e8b6ae9ed6d14363c6a6c937833",
+    "app/src/main/java/com/zzupocket/app/data/work/EnergySamplingWorker.kt": "9f8c27d6e8c2740719b4de9fd716a037295f9dea",
+    "app/src/main/java/com/zzupocket/app/domain/AcademicTrack.kt": "1546cc03dff55bdba8d47bf685c8ddae0adf6505",
+    "app/src/main/java/com/zzupocket/app/domain/CardModels.kt": "6f5cf81f9308f918fc0f600e6480b7b347bd7030",
+    "app/src/main/java/com/zzupocket/app/domain/EnergyStats.kt": "0b6f2926319d85ae7720fc15f9d1a95fa83d31a4",
+    "app/src/main/java/com/zzupocket/app/domain/FocusHeatmap.kt": "13febd32af4e0601fba6bdfcce270c447dddf9e7",
+    "app/src/main/java/com/zzupocket/app/domain/FocusModels.kt": "0a1efadd53725a9939605d429f51ce7ce2daebe2",
+    "app/src/main/java/com/zzupocket/app/domain/FocusStats.kt": "aba7b80605953923afe3438ce8e5d75fb539ca40",
+    "app/src/main/java/com/zzupocket/app/domain/PlanModels.kt": "9816c20492d7c34e0dae45209920eb487e953ed1",
+    "app/src/main/java/com/zzupocket/app/domain/RoomModels.kt": "e9aeeb5b9df47d86a341d1c12fdf84c7f2bb3259",
+    "app/src/main/java/com/zzupocket/app/domain/ScheduleModels.kt": "0714af7747f2019f9a5a872a03af27789671e6bc",
+    "app/src/main/java/com/zzupocket/app/domain/WeekAlignment.kt": "9e36599390dc040e286f8efd7c66047254d0ff64",
+    "app/src/main/java/com/zzupocket/app/focus/PomodoroEngine.kt": "996b0c5f493ecdda7d581eb121b13245c5f8e74e",
+    "app/src/main/java/com/zzupocket/app/focus/PomodoroNotifications.kt": "8200f39bc7d776b7c9ff10eee63d37c7af3e2afa",
+    "app/src/main/java/com/zzupocket/app/focus/PomodoroService.kt": "437b307de6c56518a01ac3520ac786785766c71d",
+    "app/src/main/java/com/zzupocket/app/ui/about/AboutScreen.kt": "9a27e5b6f91ccdea3625ceca8c8797450f028088",
+    "app/src/main/java/com/zzupocket/app/ui/campus/CampusScreen.kt": "72951ba0364494981ddb84789342c5fd2641bd7a",
+    "app/src/main/java/com/zzupocket/app/ui/campus/CardScreen.kt": "b5bc1827470c8fa2574104ea70bc9a416e181ccf",
+    "app/src/main/java/com/zzupocket/app/ui/campus/CardViewModel.kt": "3b60558095f2247881dd184827bbc902185436e5",
+    "app/src/main/java/com/zzupocket/app/ui/campus/Charts.kt": "17b6785b228fda6a0dbf40106b4b80b6f3487107",
+    "app/src/main/java/com/zzupocket/app/ui/campus/ElectricityScreen.kt": "cb7193348f9f6155d2282226de145e9b1e4153c8",
+    "app/src/main/java/com/zzupocket/app/ui/campus/ElectricityViewModel.kt": "3419d96627fecf13f4657c2e06162451be65de59",
+    "app/src/main/java/com/zzupocket/app/ui/campus/OnlineRoomDialog.kt": "166f5546f5f83ceb71b453e2e6d10b54072e4a81",
+    "app/src/main/java/com/zzupocket/app/ui/campus/RoomPickerDialog.kt": "ce3c8cfe2f9769104b10b0a53aed4886ff5ba68b",
+    "app/src/main/java/com/zzupocket/app/ui/campus/RoomScreen.kt": "f922e01cfc826093bcc196cea733149cb54d37c1",
+    "app/src/main/java/com/zzupocket/app/ui/campus/RoomViewModel.kt": "72fb445dcd5c8c9d4964f081981c26c81f7b85b3",
+    "app/src/main/java/com/zzupocket/app/ui/components/RelativeTime.kt": "d7290761cd5a8ce0f889cf0c50d9b1a281781977",
+    "app/src/main/java/com/zzupocket/app/ui/diag/DiagnosticsScreen.kt": "d6b1cb013da6500739b08a984d33c4b1c18f1a37",
+    "app/src/main/java/com/zzupocket/app/ui/diag/GmsProbeDialog.kt": "c2128accfdd63a833d85e97488768c8b582c9d9a",
+    "app/src/main/java/com/zzupocket/app/ui/focus/FocusScreen.kt": "dedef04705d1b019bbf31cb040f04c7e68b3d3c6",
+    "app/src/main/java/com/zzupocket/app/ui/focus/FocusStatsScreen.kt": "bc372ce48324661b68e6ba67ad6b55bf364fe0c1",
+    "app/src/main/java/com/zzupocket/app/ui/focus/FocusStatsViewModel.kt": "1c3e10f398af2bf42ac14cb0496414bb6f9f99e5",
+    "app/src/main/java/com/zzupocket/app/ui/focus/FocusViewModel.kt": "4329b757d60ce65d4599aad0ca8ca572e12800ce",
+    "app/src/main/java/com/zzupocket/app/ui/focus/Heatmap.kt": "789bcea28824b2f27d53203c06f9bb006a078a71",
+    "app/src/main/java/com/zzupocket/app/ui/library/LibraryScreen.kt": "a47ecc805e9b9dd9575251a801fe2bf0c8089636",
+    "app/src/main/java/com/zzupocket/app/ui/login/LoginScreen.kt": "9a8ca689e0246e05cdd05d62de71dc787b52b05b",
+    "app/src/main/java/com/zzupocket/app/ui/login/LoginViewModel.kt": "acf49f8283a04ebf5b9ed47d165ef9f272bd7a96",
+    "app/src/main/java/com/zzupocket/app/ui/nav/AppNav.kt": "6adbd6153d5a38ccf9700ab67b8c7584977de0f2",
+    "app/src/main/java/com/zzupocket/app/ui/nav/AppRoutes.kt": "bb32970567459cc6489a0abc7201266f4c9cd931",
+    "app/src/main/java/com/zzupocket/app/ui/schedule/BackgroundCropScreen.kt": "f8dce351897dc9cd9c2f9f2f93d26e67e65377e8",
+    "app/src/main/java/com/zzupocket/app/ui/schedule/CourseOverviewScreen.kt": "713748540e4273da668ef2082a7035e3bd199a23",
+    "app/src/main/java/com/zzupocket/app/ui/schedule/DisplaySettingsScreen.kt": "3ff77a4336bb5f69cc97323c9c3e9296ab076b5d",
+    "app/src/main/java/com/zzupocket/app/ui/schedule/PlanEditor.kt": "4a20ebac07418e2981e7cc5ddd3b9201234cc406",
+    "app/src/main/java/com/zzupocket/app/ui/schedule/ScheduleBackground.kt": "a7c3775cbcc7f3614dfd7ee16386891775c37d7d",
+    "app/src/main/java/com/zzupocket/app/ui/schedule/ScheduleScreen.kt": "40500e2ac4ef0f23c8cc07631b6b79134dcb572e",
+    "app/src/main/java/com/zzupocket/app/ui/schedule/ScheduleViewModel.kt": "02e362f6cff7bfdd1a538aa249e65ca9a99839c2",
+    "app/src/main/java/com/zzupocket/app/ui/schedule/WallpaperLayers.kt": "ad2a9c089aac78ad3106ce83687dd962c35cdab9",
+    "app/src/main/java/com/zzupocket/app/ui/settings/AppearanceScreen.kt": "bdb2e6d1b5b2cfbaf68c60baf22a4b00dcaa9606",
+    "app/src/main/java/com/zzupocket/app/ui/theme/MaterialYouScheme.kt": "d7f630abfb19acb5deafb3763d499e74bb6b481a",
+    "app/src/main/java/com/zzupocket/app/ui/theme/Theme.kt": "32260cd53f2564244141ff6d989ac71825f7780d",
+    "app/src/main/java/com/zzupocket/app/ui/today/TodayCardBalance.kt": "d1cef5790d58a476a6f57f835d8d663df4b62d0b",
+    "app/src/main/java/com/zzupocket/app/ui/today/TodayModules.kt": "b239a043a4eb465b35b924443e73081afdd1b9a3",
+    "app/src/main/java/com/zzupocket/app/ui/today/TodayScreen.kt": "60c79c201872b132ea69db3c3db1a0fe1c705270",
+    "app/src/main/java/com/zzupocket/app/ui/today/TodayTimeline.kt": "e7490b11e63bd8219a7ce702c89472220dd1cf4e",
+    "app/src/main/java/com/zzupocket/app/ui/today/TodayTimelineCard.kt": "5c3fb7013ee90be988a8d1291f3062c544865d04",
+    "app/src/main/java/com/zzupocket/app/ui/today/TodayViewModel.kt": "85c6fdd46bbef7ea2e7194ba67411228bf41114c",
+    "app/src/main/java/com/zzupocket/app/ui/web/WebViewVhFix.kt": "93d66a891732e132f59ba60cac808c7f0ea9038e",
+    "app/src/main/java/com/zzupocket/app/ui/widget/EnergyCardWidget.kt": "4113385f1f10b4b082f54df97ea30c490a39fb21",
+    "app/src/main/java/com/zzupocket/app/ui/widget/NextClassWidget.kt": "a3606a280f0feb711c5f1dfcadc1e371a99d926f",
+    "app/src/main/java/com/zzupocket/app/ui/widget/TodayClassesWidget.kt": "34b064d84c88cacb9540854ab53766b5e5029278",
+    "app/src/main/java/com/zzupocket/app/ui/widget/WidgetBalance.kt": "d6aec4c92a8d608e847bdce558d53dabba944df6",
+    "app/src/main/java/com/zzupocket/app/ui/widget/WidgetData.kt": "8553260b6ad223ee0092ca4ca8e15c188fd529fa",
+    "app/src/main/java/com/zzupocket/app/ui/widget/WidgetSchedule.kt": "ad2f2d592c0f75d82e497bcbdfd059c485f8d971",
+    "app/src/main/java/com/zzupocket/app/ui/widget/WidgetStyle.kt": "976849bbc36e493eb6829c93e81308810ee9f3ee",
+    "app/src/main/java/com/zzupocket/app/ui/widget/Widgets.kt": "4d6c5e37e5a16fa68b9dda122a39814aa5807c4a",
+    "app/src/main/res/drawable/ic_launcher_foreground.xml": "3bee0c3de817d94be5e47a02d08f060cd67566c3",
+    "app/src/main/res/drawable/ic_stat_focus.xml": "161d03b0abd75bc408b569c21a859cbaafea14c1",
+    "app/src/main/res/drawable/widget_bar.xml": "ad8b35264b2020e87ef37fa2957c2743f0942e24",
+    "app/src/main/res/drawable/widget_bg.xml": "869e8a1e5061c88d35f2ba30aec8f89c6de59ee7",
+    "app/src/main/res/drawable/widget_circle.xml": "5661aa73d484affce7d8529674cc9b203a994824",
+    "app/src/main/res/drawable/widget_preview_energy_card.png": "1febe54d5b863355a9dc5afe560b5d4b89cacdf2",
+    "app/src/main/res/drawable/widget_preview_next_class.png": "9b234a7200191fc1147a21a36f41184aff91b82f",
+    "app/src/main/res/drawable/widget_preview_today_classes.png": "3637d5729e2e7cf4bc692f5acdc5351df9316562",
+    "app/src/main/res/layout/widget_course_row.xml": "4059306cabbcb504abf39520ac482506d8bcb6b6",
+    "app/src/main/res/layout/widget_energy_card.xml": "3a06a0fc370d948e251c53794f1c31e5bb997e3b",
+    "app/src/main/res/layout/widget_energy_card_preview.xml": "8a2680f9c826440afbc30ae5109a6c04865c4ccd",
+    "app/src/main/res/layout/widget_loading.xml": "329f04917df48f360452c8910fe297c04702c0d5",
+    "app/src/main/res/layout/widget_next_class.xml": "34c7c089e2de1dc11baf0030509388030d701daa",
+    "app/src/main/res/layout/widget_next_class_preview.xml": "2fab64f1c9f40dc81d1e6b2aaa2c2aeb39959512",
+    "app/src/main/res/layout/widget_row_divider.xml": "2aed1fc573f9c8467df8d195498610764f63ff5a",
+    "app/src/main/res/layout/widget_today_classes.xml": "9e934f1cce568d90e5df67af3b681405d2548d6d",
+    "app/src/main/res/layout/widget_today_classes_preview.xml": "bf37b7df0c3e6b81d1c8037695c123618b9b8572",
+    "app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml": "5c84730caa7b72dfe85126020edffbd0e39e64fa",
+    "app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml": "5c84730caa7b72dfe85126020edffbd0e39e64fa",
+    "app/src/main/res/values-night/colors.xml": "1111331dda2c5011ae1fecc9fc875201ed80b966",
+    "app/src/main/res/values-night/themes.xml": "a5a3974354cf1ba57cbae77383933b0a83aac379",
+    "app/src/main/res/values/colors.xml": "4f638bc52600fa3df65084b61e828637d3ed4c53",
+    "app/src/main/res/values/dimens.xml": "55e55b5c5fb538cb9b966c41a2eb27c97014258b",
+    "app/src/main/res/values/strings.xml": "588835223755883b38983a16f7fd0975b7287923",
+    "app/src/main/res/values/themes.xml": "de9b079c787d13305d331782cd3920e68d6cf1bb",
+    "app/src/main/res/xml/backup_rules.xml": "2329b34ac12eb427371870ea44d68ad6866d6d34",
+    "app/src/main/res/xml/data_extraction_rules.xml": "491c90fd5f783712abda0e0d73f78a8971c6c15f",
+    "app/src/main/res/xml/energy_card_widget_info.xml": "da91fe04f4f159fa5fa89a0f61b8f88868055bdf",
+    "app/src/main/res/xml/network_security_config.xml": "b1a5329aab872f136cc013ebdd55e27b38c7a4b6",
+    "app/src/main/res/xml/next_class_widget_info.xml": "30bf1d5a6a5eeb3bd6f45ab4be414ec44355a114",
+    "app/src/main/res/xml/today_classes_widget_info.xml": "8dc8025a425201040d3cff37b5ec5c7766603dc0",
+    "app/src/test/java/com/zzupocket/app/core/EnrollmentTest.kt": "ce11bb85f9e644f56e6b91051960dec6d8f22778",
+    "app/src/test/java/com/zzupocket/app/core/LoginInputTest.kt": "b80769911a6c5303ca544177a2eb7d8577f408df",
+    "app/src/test/java/com/zzupocket/app/core/PlaceTextTest.kt": "4937a303b124867e492e2e38ef327bde84fca7db",
+    "app/src/test/java/com/zzupocket/app/core/ScheduleTextTest.kt": "c19dd31b655f5f79643621728a472cb34c98f4ca",
+    "app/src/test/java/com/zzupocket/app/core/SyncPolicyTest.kt": "43b88a7850195c41acf35478708878a2f2d4b3b5",
+    "app/src/test/java/com/zzupocket/app/core/WeekMathTest.kt": "7de71890ce44f3e126455dcd750c14668375e66b",
+    "app/src/test/java/com/zzupocket/app/data/eas/EasAuthRejectTest.kt": "17bae85b99980a18110a2f2aa466c55203118a79",
+    "app/src/test/java/com/zzupocket/app/data/ecard/CardBalanceParseTest.kt": "7fe1aca8ad978e983d2c8f54ffe97cd9b552f0ce",
+    "app/src/test/java/com/zzupocket/app/data/ecard/EnergyQuerySerializationTest.kt": "4a5d02b3744d08609fae544e93c6db2778ae38c9",
+    "app/src/test/java/com/zzupocket/app/data/gms/GmsCookieTest.kt": "1fd5557f8f3bdb22e642ed463eeebc4e1697593c",
+    "app/src/test/java/com/zzupocket/app/data/gms/GmsRedactTest.kt": "6fe24f0afe40f1d8106ed56015042b72e58b74da",
+    "app/src/test/java/com/zzupocket/app/data/gms/GmsScheduleMapperTest.kt": "c6fb718ccfb6a80610408edb02d49d15dd6c22df",
+    "app/src/test/java/com/zzupocket/app/data/gms/GmsScheduleParserTest.kt": "b104d0e66ded9dfbeb142633657d51e0b40972bc",
+    "app/src/test/java/com/zzupocket/app/data/gms/GmsWeekAlignTest.kt": "88deca0b318f4187553ab0b4e1e07a515ed92a90",
+    "app/src/test/java/com/zzupocket/app/data/room/RoomCatalogTest.kt": "623c54af4d9a5b7ea620e74c390f4b473f58874c",
+    "app/src/test/java/com/zzupocket/app/domain/AcademicTrackTest.kt": "b5544762a7fe96a8dc12a4024b0f92cf32e27c3e",
+    "app/src/test/java/com/zzupocket/app/domain/EnergyAndCardStatsTest.kt": "27fb8ab0dec4c01fef6bb396e31b824c929c7b20",
+    "app/src/test/java/com/zzupocket/app/domain/FocusHeatmapTest.kt": "7968a52306143881bed62b227f46e3c3a17a6eb7",
+    "app/src/test/java/com/zzupocket/app/domain/FocusStatsTest.kt": "1056249c602cd8fd9c260ad58417ad312a9314b3",
+    "app/src/test/java/com/zzupocket/app/domain/PomodoroClockTest.kt": "67f2f199242cbaf3c98e9105fe95b7430b6a0ee9",
+    "app/src/test/java/com/zzupocket/app/domain/RoomOccupancyGridTest.kt": "1dc3c2ce0bb2c27f3bdf4ed8dd164343fa3a3750",
+    "app/src/test/java/com/zzupocket/app/domain/SlotLineTest.kt": "4f672490cda78274a2a3059bbffca28eb6cd1660",
+    "app/src/test/java/com/zzupocket/app/domain/WeekAlignmentTest.kt": "bb3f7d4d1ebdfc2b99801c292ef8701ea213b555",
+    "app/src/test/java/com/zzupocket/app/security/AcademicNamespaceTest.kt": "82043a1d758af6989594605434659b52dff4d499",
+    "app/src/test/java/com/zzupocket/app/security/AcademicReadRecoveryTest.kt": "57b8bbaac7ba4c7d4e7cf603caeea393b85d2ee4",
+    "app/src/test/java/com/zzupocket/app/security/CredentialContainmentTest.kt": "ed69cf69044eaa18185c3dc0f620c9fdb7e620ea",
+    "app/src/test/java/com/zzupocket/app/security/GmsProfilePartitionTest.kt": "a88db611dd3dfa72e7e227c46d849198f879ecde",
+    "app/src/test/java/com/zzupocket/app/security/LocalAdversarialTest.kt": "03951aa74465962c03852aa73afd58c0082cdb34",
+    "app/src/test/java/com/zzupocket/app/security/SecurityBoundaryTest.kt": "d6ec64ff8f9b752434e8943c50c4534a8acf9109",
+    "app/src/test/java/com/zzupocket/app/security/SessionBoundaryTest.kt": "dce5f9928351bf5cfc3e3a6a1820c0d283f06870",
+    "app/src/test/java/com/zzupocket/app/security/TodayTimetableProfileTest.kt": "cf3e5d0a7b89018410ad170148db1ba70f16f672",
+    "app/src/test/java/com/zzupocket/app/security/UntrustedInputTest.kt": "150ed47ceb64a1f2f1f312a7d97f600ef18cf4dc",
+    "app/src/test/java/com/zzupocket/app/ui/campus/CardFilterTest.kt": "c28390e8edc249b20580541293c332b8d8146f57",
+    "app/src/test/java/com/zzupocket/app/ui/campus/OnlinePickerLogicTest.kt": "337074dc472a4cf981692c8386810186e913ff0d",
+    "app/src/test/java/com/zzupocket/app/ui/theme/MaterialYouSchemeTest.kt": "e1e54d6aecd20f3c760a99b9deec0064466cf81b",
+    "app/src/test/java/com/zzupocket/app/ui/today/TodayTimelineTest.kt": "0f80e60bfb673ef1f085c45c5b087dfbd9b71661",
+    "app/src/test/java/com/zzupocket/app/ui/widget/WidgetBalanceTest.kt": "9b104081cd3063fba72f9b8cb3bce2de4367841b",
+    "app/src/test/java/com/zzupocket/app/ui/widget/WidgetScheduleTest.kt": "5626c756513027cf94b975e210bda92d423a53d4",
+    "build.gradle.kts": "614b661d9075a390bc5513abb56ea9ea2ccd5989",
+    "gradle/libs.versions.toml": "dbc7d463c9c40b30cf0ea410ef03dc58ef63f643",
+    "gradle/verification-metadata.xml": "808f8f8dd1d34360bf4873a958a2e05c7ffc4c98",
+    "gradle/wrapper/gradle-wrapper.jar": "2c3521197d7c4586c843d1d3e9090525f1898cde",
+    "gradle/wrapper/gradle-wrapper.properties": "5e565e7a17d20feabaf49607ef488e80ac78af39",
+    "settings.gradle.kts": "488c9c501208ad18eedc34aac6ce523c34576eff",
+    "tools/check_dependency_verification.py": "91ddeee5c1da321193b132ea2fa81407268a1bc5",
+    "tools/gen-widget-preview.ps1": "8c5a8c30925b1e5dfd9064a1ba67fedab381886c",
+    "tools/gms_probe.py": "b417d69c09405c62e4ec59a90390c63a3662da51",
+    "tools/run-local-security.ps1": "47807ced0f172a696f1f46cce86c05bc4f809dbc",
+    "tools/security_static_check.py": "3944d2fbf7987365dbf3bca78998eedbdf80c6be"
+  },
+  "school_direct_get_requests": 7,
+  "school_business_data_requests": 0,
+  "real_credentials_used": false,
+  "runtime_device_tested": false,
+  "formal_medium_security_acceptance": false,
+  "funds_isolation_proven": false,
+  "secret_pattern_check": {
+    "date": "2026-10-28",
+    "source_text_files": 221,
+    "patterns": [
+      "private_key_block",
+      "github_token",
+      "aws_access_key",
+      "complete_jwt_shape"
+    ],
+    "hits": [],
+    "tracked_key_containers": [],
+    "apk_members_scanned": 41,
+    "apk_hits": [],
+    "scope": "heuristic current source and selected APK members; not full history or a secret-absence proof"
+  }
+}

@@ -1,5 +1,7 @@
 package com.zzupocket.app.ui.campus
 
+import com.zzupocket.app.core.security.SecurityPolicy
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -90,13 +92,13 @@ fun CampusScreen(
             GroupTitle("学习空间")
             EntryCard {
                 Entry(Icons.Filled.MeetingRoom, "教室占用", "按楼看每间教室哪一节有课", onOpenRooms)
-                Entry(Icons.Filled.EventSeat, "图书馆座位预约", "学校原版网页（需联网）", onOpenLibrary)
+                Entry(Icons.Filled.EventSeat, "图书馆座位预约", SecurityPolicy.LIBRARY_PAUSED, onOpenLibrary)
             }
 
             GroupTitle("生活服务")
             EntryCard {
-                Entry(Icons.Filled.Bolt, "电费", "照明 + 空调 · 每日用量与电费", onOpenElectricity)
-                Entry(Icons.Filled.CreditCard, "校园卡", "余额、日周月年消费、流水明细", onOpenCard)
+                Entry(Icons.Filled.Bolt, "电费", "连接已暂停，可查看本地历史", onOpenElectricity)
+                Entry(Icons.Filled.CreditCard, "校园卡", "连接已暂停，可查看本地历史", onOpenCard)
             }
 
             GroupTitle("外观")

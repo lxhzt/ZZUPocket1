@@ -1,5 +1,9 @@
 package com.zzupocket.app.data.gms
 
+import com.zzupocket.app.core.net.readBoundedText
+
+import com.zzupocket.app.core.security.SecurityPolicy
+
 import android.util.Log
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -166,7 +170,7 @@ object GmsProbe {
             }
             // 响应原文只进 logcat（可能含姓名/学号，不能进要外发的报告）
             runCatching {
-                Log.i(TAG, "RAW $path [$status] ${body.take(4000)}")
+                Log.i(TAG, "response status=$status chars=${body.length}")
             }
         }
 
@@ -235,7 +239,7 @@ object GmsProbe {
                 }
             }
             val text = sb.toString()
-            runCatching { Log.i(TAG, "REPORT\n$text") }
+            // Reports are shown locally, never copied to logcat.
             return text
         }
 
@@ -253,6 +257,7 @@ object GmsProbe {
      * 而且这个结论是**可以离线复用**的（拿到之后正式代码直接按能用的那种写）。
      */
     fun identityCheck(token: String, client: okhttp3.OkHttpClient): String {
+        SecurityPolicy.requireDiagnostics()
         val sb = StringBuilder()
         sb.appendLine("=== 身份类型自检（判断本科/研究生的依据）===")
         sb.appendLine("接口：$IDENTITY_URL")
@@ -295,7 +300,7 @@ object GmsProbe {
         )
 
         val report = sb.toString()
-        runCatching { Log.i(TAG, "IDENTITY\n$report") }
+        // Do not log identity data.
         return report
     }
 
@@ -315,7 +320,7 @@ object GmsProbe {
     ): Pair<Int, String> = runCatching {
         val builder = Request.Builder().url(url).get()
         headers.forEach { (k, v) -> builder.header(k, v) }
-        client.newCall(builder.build()).execute().use { r -> r.code to r.body?.string().orEmpty() }
+        client.newCall(builder.build()).execute().use { r -> r.code to r.body.readBoundedText() }
     }.getOrElse { 0 to "网络失败：${it.javaClass.simpleName} ${it.message.orEmpty().take(80)}" }
 
     /**

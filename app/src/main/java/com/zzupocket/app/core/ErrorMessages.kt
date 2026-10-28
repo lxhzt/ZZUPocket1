@@ -2,6 +2,7 @@ package com.zzupocket.app.core
 
 /** 把各类异常翻译成用户看得懂的一句话（界面层统一用它） */
 fun Throwable.toUserMessage(): String = when (this) {
+    is AppError.SecurityRestriction -> message ?: "该连接已被安全策略暂停"
     is AppError.BadCredentials -> message ?: "学号或密码错误"
     is AppError.MfaRequired -> "需要短信验证码"
     is AppError.Network -> "网络不可达，请检查网络后重试"

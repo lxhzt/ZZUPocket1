@@ -1,5 +1,11 @@
 package com.zzupocket.app.ui.diag
 
+import com.zzupocket.app.core.security.SecureWebView
+import com.zzupocket.app.core.security.SecureSchoolWebViewClient
+import com.zzupocket.app.core.security.SecurityPolicy
+import com.zzupocket.app.core.security.WebSessionCleaner
+import androidx.compose.runtime.DisposableEffect
+
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.webkit.ConsoleMessage
@@ -35,8 +41,11 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
+import androidx.compose.ui.window.SecureFlagPolicy
 import com.zzupocket.app.BuildConfig
 import com.zzupocket.app.data.gms.GmsProbe
 
@@ -45,7 +54,8 @@ import com.zzupocket.app.data.gms.GmsProbe
  *
  * 为什么是 WebView 而不是原生登录：那个系统走学校统一身份认证的 CAS 跳转，
  * 让用户在**学校自己的页面**上输密码/短信码，我们只负责读它登录后自己发出的接口请求 ——
- * 密码不经过我们，令牌也不用我们保管。
+ * 原生代码不读取密码输入；学校页面仍运行在本 App 的 WebView 中，
+ * 应用采用登录后取得的研究生教务会话 Cookie。
  *
  * 记录原理见 [GmsProbe]：向页面注入脚本钩住 fetch / XHR，通过 console.log 回传。
  *
@@ -63,8 +73,26 @@ fun GmsProbeDialog(
     /** true = 当登录器用（课表页进来），false = 当自检用（诊断页进来） */
     loginMode: Boolean = false,
 ) {
+    if (!loginMode && !SecurityPolicy.NETWORK_DIAGNOSTICS_ENABLED) {
+        Text("在线诊断已暂停，安全验证仅在本地模拟环境运行。")
+        return
+    }
     val recorder = remember { GmsProbe.Recorder() }
     val webRef = remember { mutableStateOf<WebView?>(null) }
+    DisposableEffect(Unit) {
+        onDispose {
+            webRef.value?.let { view ->
+                WebSessionCleaner.unregister(view)
+                view.stopLoading()
+                view.clearHistory()
+                view.removeAllViews()
+                view.destroy()
+            }
+            webRef.value = null
+            // The native GMS jar has its own adopted cookie. Retire browser-wide CAS SSO.
+            WebSessionCleaner.clear()
+        }
+    }
     // 登录模式直接从 CAS 登录页进：从 /stu 进在部分网络会无限重定向（见 GmsProbe.CAS_SERVICE_ENTRY 注释）
     val entryUrl = if (loginMode) GmsProbe.CAS_SERVICE_ENTRY else GmsProbe.ENTRY
     var shownUrl by remember { mutableStateOf(entryUrl) }
@@ -109,8 +137,14 @@ fun GmsProbeDialog(
 
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false),
+        properties = DialogProperties(usePlatformDefaultWidth = false, securePolicy = SecureFlagPolicy.SecureOn),
     ) {
+        // A Dialog owns a different Window from MainActivity, including while entering a password.
+        val dialogWindow = (LocalView.current.parent as? DialogWindowProvider)?.window
+        DisposableEffect(dialogWindow) {
+            dialogWindow?.setHideOverlayWindows(true)
+            onDispose { }
+        }
         Surface(modifier = Modifier.fillMaxSize()) {
             Column(modifier = Modifier.fillMaxSize()) {
                 // ── 顶部：标题 + 进度 + 按钮（按钮放顶部，键盘弹起也点得到）──────
@@ -192,8 +226,8 @@ fun GmsProbeDialog(
                     }
                     Text(
                         if (loginMode) {
-                            "用你的研究生账号登录 —— 密码在学校自己的页面上输，我们不接触、也不保存。" +
-                                "登录成功、回到研究生系统页面之后，点下面的「完成登录」就能拉课表。" +
+                            "请在学校登录页完成验证。应用保存同步课表所需的登录状态，不保存登录密码。重新登录后会重新同步课表。" +
+                                "登录成功、回到研究生系统页面之后，点上方的「完成登录」就能拉课表。" +
                                 "这页打不开或反复跳转时，点「重新登录」清掉旧会话再试。"
                         } else {
                             "用你自己的研究生账号登录（密码在学校自己的页面上输）。进去后翻到「课表/我的课程」，" +
@@ -208,8 +242,14 @@ fun GmsProbeDialog(
                 AndroidView(
                     modifier = Modifier.weight(1f).fillMaxWidth(),
                     factory = { ctx ->
-                        WebView(ctx).apply {
-                            if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true)
+                        object : WebView(ctx) {
+                            override fun onFilterTouchEventForSecurity(event: android.view.MotionEvent): Boolean {
+                                val obscured = android.view.MotionEvent.FLAG_WINDOW_IS_OBSCURED or
+                                    android.view.MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED
+                                return event.flags and obscured == 0 && super.onFilterTouchEventForSecurity(event)
+                            }
+                        }.apply {
+                            WebView.setWebContentsDebuggingEnabled(false)
                             settings.javaScriptEnabled = true
                             settings.domStorageEnabled = true
                             settings.databaseEnabled = true
@@ -225,13 +265,14 @@ fun GmsProbeDialog(
                             )
                             settings.useWideViewPort = true
                             settings.loadWithOverviewMode = true
-                            settings.cacheMode = android.webkit.WebSettings.LOAD_DEFAULT
+                            settings.cacheMode = android.webkit.WebSettings.LOAD_NO_CACHE
                             // 这个站点入口会在 HTTP/HTTPS 之间跳，不放混合内容会白屏
                             settings.mixedContentMode =
-                                android.webkit.WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+                                android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW
                             setBackgroundColor(android.graphics.Color.WHITE)
                             CookieManager.getInstance().setAcceptCookie(true)
-                            CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
+                            CookieManager.getInstance().setAcceptThirdPartyCookies(this, false)
+                            SecureWebView.configure(this)
 
                             // ⚠️ 必须等测量出高度再 load（见类注释第 2 条）
                             fun startOnce(how: String) {
@@ -264,18 +305,20 @@ fun GmsProbeDialog(
                             val wv = this
                             val reinject = object : Runnable {
                                 override fun run() {
-                                    inject(wv)
-                                    wv.postDelayed(this, 1500)
+                                    if (wv.isAttachedToWindow && !loginMode) {
+                                        inject(wv)
+                                        wv.postDelayed(this, 1500)
+                                    }
                                 }
                             }
-                            postDelayed(reinject, 800)
+                            if (!loginMode) postDelayed(reinject, 800)
 
-                            webViewClient = object : WebViewClient() {
+                            webViewClient = object : SecureSchoolWebViewClient() {
                                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                                     url?.let {
                                         recorder.noteNavigation(it)
                                         navCount++
-                                        shownUrl = it
+                                        shownUrl = android.net.Uri.parse(it).host.orEmpty()
                                         snapshotCookies(it)
                                     }
                                     inject(view)
@@ -284,7 +327,7 @@ fun GmsProbeDialog(
                                 override fun onPageFinished(view: WebView?, url: String?) {
                                     url?.let {
                                         recorder.noteNavigation(it)
-                                        shownUrl = it
+                                        shownUrl = android.net.Uri.parse(it).host.orEmpty()
                                         snapshotCookies(it)
                                     }
                                     inject(view)
@@ -306,7 +349,7 @@ fun GmsProbeDialog(
                                     val desc = error?.description?.toString().orEmpty()
                                     val url = request?.url?.toString().orEmpty()
                                     val main = request?.isForMainFrame == true
-                                    android.util.Log.w(com.zzupocket.app.data.gms.GmsProbe.TAG, "LOAD-ERR code=$code main=$main desc=$desc url=$url")
+                                    android.util.Log.w(com.zzupocket.app.data.gms.GmsProbe.TAG, "LOAD-ERR code=$code main=$main")
                                     if (main) loadError = "加载失败 code=$code：$desc"
                                 }
 
@@ -317,13 +360,13 @@ fun GmsProbeDialog(
                                 ) {
                                     val status = response?.statusCode ?: 0
                                     val url = request?.url?.toString().orEmpty()
-                                    android.util.Log.w(com.zzupocket.app.data.gms.GmsProbe.TAG, "HTTP-ERR $status url=$url")
+                                    android.util.Log.w(com.zzupocket.app.data.gms.GmsProbe.TAG, "HTTP-ERR $status")
                                 }
                             }
 
                             webChromeClient = object : WebChromeClient() {
                                 override fun onConsoleMessage(msg: ConsoleMessage): Boolean {
-                                    if (recorder.recordConsole(msg.message())) {
+                                    if (!loginMode && recorder.recordConsole(msg.message())) {
                                         hitCount = recorder.hitCount()
                                         return true
                                     }

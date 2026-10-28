@@ -133,7 +133,14 @@ class PomodoroNotifications(private val context: Context) {
      * 而番茄钟本身不该因为通知发不出去就崩 —— 所以吞掉。
      */
     private fun notifySafely(id: Int, notification: Notification) {
-        runCatching { NotificationManagerCompat.from(context).notify(id, notification) }
+        if (android.os.Build.VERSION.SDK_INT >= 33 &&
+            androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) !=
+            android.content.pm.PackageManager.PERMISSION_GRANTED) return
+        try {
+            NotificationManagerCompat.from(context).notify(id, notification)
+        } catch (_: SecurityException) {
+            // Permission may be revoked between checking and posting.
+        }
     }
 
     private fun openAppIntent(): PendingIntent {

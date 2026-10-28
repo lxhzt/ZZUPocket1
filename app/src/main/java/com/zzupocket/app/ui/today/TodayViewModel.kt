@@ -1,5 +1,7 @@
 package com.zzupocket.app.ui.today
 
+import com.zzupocket.app.core.security.SecurityPolicy
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.zzupocket.app.core.AppError
@@ -132,6 +134,7 @@ class TodayViewModel : ViewModel() {
     }
 
     private suspend fun autoRefreshIfStale() {
+        if (!SecurityPolicy.FINANCIAL_NETWORK_ENABLED) return
         if (!auth.isLoggedIn()) return
         val s = _state.value
         val newest = listOfNotNull(s.light.fetchedAt, s.ac.fetchedAt).maxOrNull()
@@ -154,6 +157,10 @@ class TodayViewModel : ViewModel() {
     }
 
     private suspend fun doRefresh() {
+        if (!SecurityPolicy.FINANCIAL_NETWORK_ENABLED) {
+            _state.update { it.copy(loading = false, stale = true, roomHint = SecurityPolicy.FINANCE_PAUSED) }
+            return
+        }
         _state.update { it.copy(loading = true) }
         val (lightRoom, acRoom) = rooms()
         val snap = repo.refreshAll(lightRoom, acRoom)

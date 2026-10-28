@@ -35,6 +35,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+        window.setHideOverlayWindows(true)
 
         consumeWidgetRoute(intent)
 
@@ -75,11 +77,19 @@ class MainActivity : ComponentActivity() {
         consumeWidgetRoute(intent)
     }
 
+    override fun dispatchTouchEvent(event: android.view.MotionEvent): Boolean {
+        val obscured = android.view.MotionEvent.FLAG_WINDOW_IS_OBSCURED or
+            android.view.MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED
+        if (event.flags and obscured != 0) return false
+        return super.dispatchTouchEvent(event)
+    }
+
     private fun consumeWidgetRoute(intent: Intent?) {
         val route = intent?.getStringExtra(AppRoutes.EXTRA_ROUTE) ?: return
         // 读完就把 extra 从 Intent 里删掉：这条 Intent 会被系统留着，
         // 重建时不该再取到它（否则每次重建都要跳一次）
         intent.removeExtra(AppRoutes.EXTRA_ROUTE)
+        if (!AppRoutes.isWidgetRoute(route)) return
         widgetRoute = route
         routeToken++
     }

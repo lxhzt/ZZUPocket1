@@ -5,6 +5,8 @@ import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.graphics.BitmapFactory
 import android.util.Log
+import com.zzupocket.app.core.security.copyLimitedTo
+import com.zzupocket.app.core.security.imageSampleSize
 import java.io.File
 import androidx.compose.ui.text.style.TextAlign
 import kotlinx.coroutines.withTimeoutOrNull
@@ -90,8 +92,9 @@ fun BackgroundCropScreen(
     // （华为 Mate 70 Pro 反馈就是"系统说文件在本地，App 说读不出来"）。
     // 现在把**失败发生在哪一步 + 异常类型**写进提示里，用户截图就能定位。
     var loadError by remember(sourceUri, useSavedSource) { mutableStateOf<String?>(null) }
-    val source by produceState<Bitmap?>(initialValue = null, sourceUri, useSavedSource) {
-        value = withContext(Dispatchers.IO) {
+    var source by remember(sourceUri, useSavedSource) { mutableStateOf<Bitmap?>(null) }
+    androidx.compose.runtime.LaunchedEffect(sourceUri, useSavedSource) {
+        source = withContext(Dispatchers.IO) {
             if (useSavedSource) {
                 decodeBitmapFile(ScheduleBackground.sourceFile(context), MAX_DECODE_WIDTH)
             } else if (sourceUri == null) {
@@ -374,36 +377,21 @@ private fun decodeSampled(context: Context, uri: Uri): DecodeResult {
     }
 
     Log.w(TAG, "read failed: $readError")
-    // 兜底：极少数 provider 只有"直接读 URI"这条能走
-    val direct = runCatching {
-        ImageDecoder.decodeBitmap(
-            ImageDecoder.createSource(context.contentResolver, uri),
-        ) { decoder, info, _ ->
-            decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-            decoder.isMutableRequired = false
-            val width = info.size.width
-            if (width > MAX_DECODE_WIDTH) {
-                decoder.setTargetSampleSize(
-                    (width / MAX_DECODE_WIDTH.toFloat()).roundToInt().coerceAtLeast(1),
-                )
-            }
-        }
-    }.getOrNull()
-    return if (direct != null) DecodeResult(direct, null) else DecodeResult(null, readError)
+    return DecodeResult(null, readError)
 }
 
 /** 把 URI 内容读进 [temp]；返回 null 表示成功，否则是失败原因 */
 private fun readToTempFile(context: Context, uri: Uri, temp: File): String? = try {
     val input = context.contentResolver.openInputStream(uri)
     if (input != null) {
-        input.use { ins -> temp.outputStream().use { out -> ins.copyTo(out, 64 * 1024) } }
+        input.use { ins -> temp.outputStream().use { out -> ins.copyLimitedTo(out) } }
     } else {
         // 部分 OEM 的 provider 用 openInputStream 返回 null，但 openFileDescriptor 可用
         val pfd = context.contentResolver.openFileDescriptor(uri, "r")
             ?: return "无法打开文件（provider 返回空流）"
         pfd.use { fd ->
             java.io.FileInputStream(fd.fileDescriptor).use { ins ->
-                temp.outputStream().use { out -> ins.copyTo(out, 64 * 1024) }
+                temp.outputStream().use { out -> ins.copyLimitedTo(out) }
             }
         }
     }
@@ -414,25 +402,21 @@ private fun readToTempFile(context: Context, uri: Uri, temp: File): String? = tr
 
 /** 本地文件解码：ImageDecoder 优先（EXIF/HEIF），失败再 BitmapFactory 按需采样 */
 private fun decodeLocalFile(file: File): Pair<Bitmap?, String?> {
-    val imageDecoderError = runCatching {
+    val decoded = runCatching {
         ImageDecoder.decodeBitmap(ImageDecoder.createSource(file)) { decoder, info, _ ->
             decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
             decoder.isMutableRequired = false
-            val width = info.size.width
-            if (width > MAX_DECODE_WIDTH) {
-                decoder.setTargetSampleSize(
-                    (width / MAX_DECODE_WIDTH.toFloat()).roundToInt().coerceAtLeast(1),
-                )
-            }
+            decoder.setTargetSampleSize(imageSampleSize(info.size.width, info.size.height, MAX_DECODE_WIDTH))
         }
-    }.exceptionOrNull()
+    }
+    decoded.getOrNull()?.let { return it to null }
 
     val byFactory = runCatching {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeFile(file.absolutePath, bounds)
-        if (bounds.outWidth <= 0) return@runCatching null
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return@runCatching null
         var sample = 1
-        while (bounds.outWidth / (sample * 2) >= MAX_DECODE_WIDTH) sample *= 2
+        while (maxOf(bounds.outWidth, bounds.outHeight).toLong() > MAX_DECODE_WIDTH.toLong() * sample) sample *= 2
         BitmapFactory.decodeFile(
             file.absolutePath,
             BitmapFactory.Options().apply {
@@ -443,7 +427,7 @@ private fun decodeLocalFile(file: File): Pair<Bitmap?, String?> {
     }.getOrNull()
 
     if (byFactory != null) return byFactory to null
-    return null to imageDecoderError?.javaClass?.simpleName
+    return null to decoded.exceptionOrNull()?.javaClass?.simpleName
 }
 private const val MAX_DECODE_WIDTH = 2048
 

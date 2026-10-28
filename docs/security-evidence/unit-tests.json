@@ -1,0 +1,65 @@
+{
+  "date": "2026-10-25",
+  "command": "gradlew.bat testDebugUnitTest exportSecurityDependencies -I .security-tools/export-deps.init.gradle --offline --console=plain --no-daemon --max-workers=1 -Pkotlin.compiler.execution.strategy=in-process -Dorg.gradle.jvmargs=-Xmx2048m",
+  "tests": 327,
+  "failures": 0,
+  "errors": 0,
+  "security_suites": [
+    {
+      "name": "com.zzupocket.app.security.SecurityBoundaryTest",
+      "tests": 7,
+      "seconds": 0.496,
+      "cases": [
+        {
+          "name": "scheme port userinfo suffix and finance bypasses are rejected",
+          "seconds": 0.002
+        },
+        {
+          "name": "decompressed and unknown length responses are bounded",
+          "seconds": 0.004
+        },
+        {
+          "name": "MFA state and SMS codes cannot be sent to untrusted destinations",
+          "seconds": 0.079
+        },
+        {
+          "name": "financial entry points fail before the supplied transport",
+          "seconds": 0.054
+        },
+        {
+          "name": "native research client does not follow credential bearing redirects",
+          "seconds": 0.003
+        },
+        {
+          "name": "cookie scope expiry secure deletion and concurrent mutation",
+          "seconds": 0.151
+        },
+        {
+          "name": "blocked requests never reach transport or DNS under concurrent load",
+          "seconds": 0.203
+        }
+      ]
+    },
+    {
+      "name": "com.zzupocket.app.security.UntrustedInputTest",
+      "tests": 3,
+      "seconds": 0.64,
+      "cases": [
+        {
+          "name": "huge reversed overflow and malformed weeks cannot expand",
+          "seconds": 0.001
+        },
+        {
+          "name": "image copy and extreme aspect ratios stay bounded",
+          "seconds": 0.001
+        },
+        {
+          "name": "deterministic malformed input corpus remains bounded",
+          "seconds": 0.638
+        }
+      ]
+    }
+  ],
+  "external_security_test_requests": 0,
+  "device_or_emulator_tested": false
+}

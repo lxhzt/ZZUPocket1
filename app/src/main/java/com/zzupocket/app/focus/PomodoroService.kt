@@ -121,10 +121,14 @@ class PomodoroService : Service() {
                             )
                         }
                         foregroundStarted = true
-                    } else {
-                        runCatching {
+                    } else if (Build.VERSION.SDK_INT < 33 ||
+                        androidx.core.content.ContextCompat.checkSelfPermission(this@PomodoroService,
+                            android.Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                        try {
                             NotificationManagerCompat.from(this@PomodoroService)
                                 .notify(PomodoroNotifications.NOTIF_ID_TIMER, notification)
+                        } catch (_: SecurityException) {
+                            // Permission may be revoked while the service is running.
                         }
                     }
                 }

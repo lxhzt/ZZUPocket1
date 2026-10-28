@@ -1,5 +1,7 @@
 package com.zzupocket.app.data.eas
 
+import com.zzupocket.app.core.security.SecurityPolicy
+
 import android.util.Log
 import com.zzupocket.app.core.AppError
 import com.zzupocket.app.core.JsonStructure
@@ -39,6 +41,7 @@ class RoomProbe(
 ) {
 
     suspend fun run(): String {
+        SecurityPolicy.requireDiagnostics()
         val sb = StringBuilder()
         sb.appendLine("=== 教务教室占用接口自检 v3（请求体形状） ===")
         sb.appendLine("时间：${LocalDate.now()}")

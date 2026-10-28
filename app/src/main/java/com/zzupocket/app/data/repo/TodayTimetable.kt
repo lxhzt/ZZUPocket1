@@ -1,7 +1,7 @@
 package com.zzupocket.app.data.repo
 
 import com.zzupocket.app.core.WeekMath
-import com.zzupocket.app.data.gms.GmsScheduleMapper
+import com.zzupocket.app.data.gms.GmsProfileSnapshot
 import com.zzupocket.app.data.prefs.UiPrefsStore
 import com.zzupocket.app.domain.Session
 import java.time.LocalDate
@@ -27,30 +27,45 @@ object TodayTimetable {
         repo: ScheduleRepository,
         prefs: UiPrefsStore,
         date: LocalDate,
+        profile: GmsProfileSnapshot?,
     ): List<Session> {
+        if (profile != null && !profile.isCurrent()) return emptyList()
         val out = ArrayList<Session>()
 
         runCatching {
-            val semester = repo.currentSemester() ?: return@runCatching
+            val semester = repo.currentSemester()?.takeIf { it.id >= 0 } ?: return@runCatching
             val week = repo.resolveCurrentWeek(semester, date)
             out += repo.sessionsOn(semester.id, date, week)
         }
 
         runCatching {
-            val week = gradWeekAt(prefs, date) ?: return@runCatching
-            out += repo.sessionsOn(GmsScheduleMapper.GRAD_SEMESTER_ID, date, week)
+            out += readGraduate(profile, emptyList()) { semesterId ->
+                val week = gradWeekAt(prefs, date, profile) ?: return@readGraduate emptyList()
+                repo.sessionsOn(semesterId, date, week)
+            }
         }
 
+        if (profile != null && !profile.isCurrent()) return emptyList()
         return out.distinctBy { it.id }.sortedBy { it.startUnit }
     }
 
     /** 研究生在 [date] 那天属于第几周；没有周次基准（没设置过）返回 null */
-    suspend fun gradWeekAt(prefs: UiPrefsStore, date: LocalDate): Int? {
-        val settings = runCatching { prefs.weekSettings(GmsScheduleMapper.GRAD_SEMESTER_ID) }
-            .getOrNull() ?: return null
-        val start = settings.weekOneStart ?: return null
-        val week = WeekMath.weekIndexAt(start, date)
-        return week.takeIf { it >= 1 }
+    suspend fun gradWeekAt(prefs: UiPrefsStore, date: LocalDate, profile: GmsProfileSnapshot?): Int? =
+        readGraduate<Int?>(profile, null) { semesterId ->
+            val settings = runCatching { prefs.weekSettings(semesterId) }.getOrNull() ?: return@readGraduate null
+            val start = settings.weekOneStart ?: return@readGraduate null
+            WeekMath.weekIndexAt(start, date).takeIf { it >= 1 }
+        }
+
+    /** All graduate reads use a captured namespace and discard results after session replacement. */
+    internal suspend fun <T> readGraduate(
+        profile: GmsProfileSnapshot?,
+        unavailable: T,
+        read: suspend (Int) -> T,
+    ): T {
+        val scope = profile?.takeIf { it.isCurrent() } ?: return unavailable
+        val result = read(scope.semesterId)
+        return if (scope.isCurrent()) result else unavailable
     }
 
     /**
@@ -64,13 +79,14 @@ object TodayTimetable {
         repo: ScheduleRepository,
         prefs: UiPrefsStore,
         date: LocalDate,
+        profile: GmsProfileSnapshot?,
     ): Int? {
-        val semester = runCatching { repo.currentSemester() }.getOrNull()
+        val semester = runCatching { repo.currentSemester()?.takeIf { it.id >= 0 } }.getOrNull()
         if (semester != null) {
             val week = runCatching { repo.resolveCurrentWeek(semester, date) }.getOrNull()
             if (week != null) return week
         }
-        return gradWeekAt(prefs, date)
+        return gradWeekAt(prefs, date, profile)
     }
 
     /**
@@ -78,10 +94,10 @@ object TodayTimetable {
      *
      * 组件用它区分「还没同步过」和「今天没课」——这两种情况显示不同文案，不能混。
      */
-    suspend fun hasAnySchedule(repo: ScheduleRepository, prefs: UiPrefsStore): Boolean {
-        val undergrad = runCatching { repo.currentSemester()?.let { repo.hasCourseData(it.id) } }
+    suspend fun hasAnySchedule(repo: ScheduleRepository, prefs: UiPrefsStore, profile: GmsProfileSnapshot?): Boolean {
+        val undergrad = runCatching { repo.currentSemester()?.takeIf { it.id >= 0 }?.let { repo.hasCourseData(it.id) } }
             .getOrNull() == true
         if (undergrad) return true
-        return gradWeekAt(prefs, LocalDate.now()) != null
+        return gradWeekAt(prefs, LocalDate.now(), profile) != null
     }
 }

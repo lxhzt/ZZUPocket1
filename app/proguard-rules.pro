@@ -19,3 +19,12 @@
 # Tink（EncryptedSharedPreferences 背后）用反射注册 KeyManager，保守整包保留。
 -keep class com.google.crypto.tink.** { *; }
 -dontwarn com.google.crypto.tink.**
+
+# No application logs (including URLs/console/probe output) in production builds.
+-assumenosideeffects class android.util.Log {
+    public static *** v(...);
+    public static *** d(...);
+    public static *** i(...);
+    public static *** w(...);
+    public static *** e(...);
+}

@@ -9,6 +9,6 @@ object EasDiagnostics {
         val obj = json.parseToJsonElement(text) as? JsonObject
         obj?.keys?.joinToString(",") ?: "（不是 JSON 对象）"
     } catch (_: Exception) {
-        "（无法解析为 JSON，前 120 字符：${text.take(120)}）"
+        "（无法解析为 JSON，内容已省略）"
     }
 }

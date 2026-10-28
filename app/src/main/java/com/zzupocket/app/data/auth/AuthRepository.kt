@@ -1,5 +1,8 @@
 package com.zzupocket.app.data.auth
 
+import com.zzupocket.app.core.security.SecurityPolicy
+import com.zzupocket.app.core.security.WebSessionCleaner
+
 import com.zzupocket.app.core.AppError
 import com.zzupocket.app.core.crypto.Crypto
 import com.zzupocket.app.data.ecard.EcardClient
@@ -12,8 +15,8 @@ import com.zzupocket.app.data.ecard.EcardClient
  *        └─(host/open)→ tid ─(getToken)→ 一卡通 accessToken（45 分钟）
  *
  * ⚠️ **不持久化密码**：userToken 过期后需要用户重新登录一次。换来的好处是设备上
- * 不存在可直接复用的账号密码。首次登录时把本设备在统一认证安全中心设为可信设备后，
- * 重新登录不再需要短信验证码。
+ * 不存在由原生登录流程持久保存的账号密码。是否需要短信验证由学校决定，
+ * 不要求用户为使用本 App 将设备设为可信设备。
  */
 class AuthRepository(
     private val store: TokenStore,
@@ -82,6 +85,7 @@ class AuthRepository(
     // ── 登录编排（账密 → 可能再要短信码 → 换令牌）─────────────────────
 
     suspend fun beginLogin(account: String, password: String): LoginStep {
+        requireBoundAccount(account)
         val detect = cas.detectMfa(account, password)
         val challenge = detect.challenge
         if (challenge != null) {
@@ -104,6 +108,7 @@ class AuthRepository(
         challenge: CasClient.MfaChallenge,
         code: String,
     ): LoginStep.Success {
+        requireBoundAccount(account)
         cas.verifySmsCode(challenge, code)
         // 同样要带上 state —— 它来自 /mfa/detect，短信校验通过后一并交给 passwordLogin
         val result = cas.login(account, password, mfaState = challenge.state)
@@ -111,8 +116,11 @@ class AuthRepository(
     }
 
     private fun persist(result: CasClient.LoginResult, account: String): LoginStep.Success {
+        requireBoundAccount(account)
+        store.boundAccount = account
         store.casUserToken = result.userToken
-        store.casRefreshToken = result.refreshToken
+        // No refresh flow consumes this credential. Do not retain an unused long-lived secret.
+        store.casRefreshToken = null
         store.lastLoginAt = System.currentTimeMillis()
         // CAS 令牌换了，一卡通的二级令牌一起作废
         store.ecardAccessToken = null
@@ -121,7 +129,15 @@ class AuthRepository(
         return LoginStep.Success(account)
     }
 
+    private fun requireBoundAccount(account: String) {
+        val bound = store.boundAccount
+        if (bound != null && bound != account) {
+            throw AppError.SecurityRestriction("此安全版安装仅允许同一学校账号登录，账号切换暂未开放。")
+        }
+    }
+
     fun logout() {
+        WebSessionCleaner.clear()
         store.clearAll()
     }
 
@@ -132,6 +148,7 @@ class AuthRepository(
      * 一卡通官方周期是 45 分钟，这里按 40 分钟提前刷新。
      */
     suspend fun requireEcardAccessToken(): String {
+        SecurityPolicy.requireFinancialNetwork()
         val cached = store.ecardAccessToken
         val age = System.currentTimeMillis() - store.ecardTokenAt
         if (!cached.isNullOrEmpty() && age in 0 until EcardClient.TOKEN_TTL_MS) return cached

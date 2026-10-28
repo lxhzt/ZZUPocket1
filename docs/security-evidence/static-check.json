@@ -1,0 +1,74 @@
+{
+  "network_requests": 0,
+  "checks": [
+    {
+      "check": "FINANCIAL_NETWORK_ENABLED disabled",
+      "passed": true
+    },
+    {
+      "check": "LIBRARY_ENABLED disabled",
+      "passed": true
+    },
+    {
+      "check": "NETWORK_DIAGNOSTICS_ENABLED disabled",
+      "passed": true
+    },
+    {
+      "check": "backup disabled",
+      "passed": true
+    },
+    {
+      "check": "cleartext disabled in manifest",
+      "passed": true
+    },
+    {
+      "check": "no cleartext exceptions",
+      "passed": true
+    },
+    {
+      "check": "system certificate trust only",
+      "passed": true
+    },
+    {
+      "check": "backup_rules.xml excludes private files and WebView data",
+      "passed": true
+    },
+    {
+      "check": "data_extraction_rules.xml excludes private files and WebView data",
+      "passed": true
+    },
+    {
+      "check": "only launcher activity exported",
+      "passed": true
+    },
+    {
+      "check": "no added sensitive device permissions",
+      "passed": true
+    },
+    {
+      "check": "all ecard request sites guarded",
+      "passed": true
+    },
+    {
+      "check": "native GMS redirects disabled and policy installed",
+      "passed": true
+    },
+    {
+      "check": "release has no debug signing fallback",
+      "passed": true
+    },
+    {
+      "check": "fork has separate application data",
+      "passed": true
+    },
+    {
+      "check": "Gradle distribution integrity pinned",
+      "passed": true
+    },
+    {
+      "check": "no SSL error bypass or native JS bridge",
+      "passed": true
+    }
+  ],
+  "passed": true
+}
